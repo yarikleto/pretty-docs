@@ -1,0 +1,5 @@
+{
+  "enabledPlugins": {
+    "claude-swe-plugin@claude-swe-marketplace": true
+  }
+}
