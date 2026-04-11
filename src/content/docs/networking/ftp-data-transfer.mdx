@@ -56,3 +56,11 @@ The transfer mode determines how data is formatted and sent through the data con
 **Compressed mode** uses run-length encoding to compress the data before transmission. Runs of repeated bytes are replaced with a single byte and a repeat count. While this reduces bandwidth for certain types of data, modern alternatives like gzip compression at the application level or TLS compression have made this mode largely obsolete.
 
 <SourceRef section="3.4" quote="The next consideration in transferring data is choosing the appropriate transmission mode." />
+
+:::note
+Most modern FTP clients default to **binary (Image) mode** to avoid accidental data corruption. Always verify your transfer type when working with text files across different operating systems.
+:::
+
+:::caution
+Compressed mode (`MODE C`) is largely obsolete. Modern deployments should use TLS-level compression or application-layer tools like `gzip` instead of relying on FTP's built-in compression.
+:::

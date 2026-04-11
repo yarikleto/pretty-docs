@@ -1,0 +1,179 @@
+---
+/*
+  Hero.astro — Landing page hero section.
+
+  Displays the headline with accent-colored second line, subtitle paragraph,
+  and two CTA buttons (primary "Browse articles" and secondary "View on GitHub").
+  Uses a diagonal gradient background that adapts to light/dark mode via the
+  data-theme attribute set by Landing.astro's render-blocking script.
+
+  Tokens referenced:
+    --surface-900, --surface-600, --surface-700, --surface-300, --surface-50
+    --brand-600, --brand-700, --brand-400, --accent
+    --dark-border, --dark-surface, --dark-text
+  Some of these are added to Landing.astro's global tokens by this task.
+*/
+---
+
+<section class="hero">
+  <div class="hero-container">
+    <div class="hero-content">
+      <h1 class="hero-headline">
+        Old docs are ugly.<br />
+        <span class="hero-accent">These aren't.</span>
+      </h1>
+      <p class="hero-subtitle">
+        Pretty Docs rewrites RFCs, man pages, and technical standards into
+        beautiful, understandable articles. Open source. Community-driven.
+        Always cites the original.
+      </p>
+      <div class="hero-actions">
+        <a href="/networking/ftp-data-transfer/" class="btn btn-primary">
+          Browse articles
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M6 4l4 4-4 4" />
+          </svg>
+        </a>
+        <a
+          href="https://github.com/YaroslavPakhaliuk/pretty-docs"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-secondary"
+        >
+          View on GitHub
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* --- Hero gradient background --- */
+  .hero {
+    background: linear-gradient(135deg, #f0f4ff 0%, #ffffff 50%, #f0f4ff 100%);
+  }
+
+  :root[data-theme='dark'] .hero {
+    background: linear-gradient(135deg, #1f2133 0%, #1a1b26 50%, #1f2133 100%);
+  }
+
+  /* --- Layout --- */
+  .hero-container {
+    max-width: 72rem; /* max-w-6xl = 1152px */
+    margin-inline: auto;
+    padding: 96px 24px 80px; /* pt-24 pb-20 px-6 */
+  }
+
+  .hero-content {
+    max-width: 42rem; /* max-w-2xl = 672px */
+  }
+
+  /* --- Headline --- */
+  .hero-headline {
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    color: var(--surface-900);
+    margin: 0;
+  }
+
+  .hero-accent {
+    color: var(--brand-600);
+  }
+
+  :root[data-theme='dark'] .hero-accent {
+    color: var(--brand-400);
+  }
+
+  /* --- Subtitle --- */
+  .hero-subtitle {
+    margin-top: 24px;
+    font-size: 1.125rem;
+    font-weight: 400;
+    line-height: 1.625;
+    color: var(--surface-600);
+    max-width: 32rem; /* max-w-lg = 512px */
+  }
+
+  /* --- Button group --- */
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+  }
+
+  /* --- Shared button styles --- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    cursor: pointer;
+    border: none;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  /* --- Primary button --- */
+  .btn-primary {
+    background: var(--brand-600);
+    color: #ffffff;
+    box-shadow: 0 1px 2px rgba(76, 110, 245, 0.2);
+  }
+
+  .btn-primary:hover {
+    background: #4263eb; /* brand-700 */
+  }
+
+  :root[data-theme='dark'] .btn-primary {
+    background: var(--brand-400);
+    color: #1a1b26;
+    box-shadow: none;
+  }
+
+  :root[data-theme='dark'] .btn-primary:hover {
+    background: #91a7ff; /* brand-300, slightly lighter */
+  }
+
+  /* --- Secondary button --- */
+  .btn-secondary {
+    background: transparent;
+    color: var(--surface-700);
+    border: 1px solid #dee2e6; /* surface-300 */
+  }
+
+  .btn-secondary:hover {
+    border-color: #ced4da; /* surface-400 */
+    background: var(--surface-50);
+  }
+
+  :root[data-theme='dark'] .btn-secondary {
+    color: var(--text-body);
+    border-color: #2e3150; /* dark-border */
+  }
+
+  :root[data-theme='dark'] .btn-secondary:hover {
+    border-color: rgba(200, 202, 216, 0.3);
+    background: #1f2133; /* dark-surface */
+  }
+</style>

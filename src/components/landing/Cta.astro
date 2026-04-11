@@ -1,0 +1,189 @@
+---
+/*
+  Cta.astro — Bottom call-to-action section for the landing page.
+
+  Renders a heading, subtitle, category tag pills, and two action buttons
+  ("Browse articles" primary, "Contribution guide" secondary). The tags are
+  non-interactive labels (cursor: default) with a subtle hover tint to give
+  visual feedback without implying clickability.
+
+  No props — all content is static.
+*/
+
+const categories = [
+  'Protocols',
+  'C Libraries',
+  'Mathematics',
+  'Standards',
+  'Unix / POSIX',
+  'Cryptography',
+  'File Formats',
+  'Compression',
+];
+---
+
+<section class="cta">
+  <div class="cta-container">
+    <div class="cta-content">
+      <h2 class="cta-heading">Start reading. Or start writing.</h2>
+      <p class="cta-subtitle">
+        We're rewriting the ugliest docs on the internet, one article at a time.
+        Browse what's here, or contribute the next one.
+      </p>
+
+      <div class="cta-tags">
+        {categories.map((tag) => (
+          <span class="cta-tag">{tag}</span>
+        ))}
+      </div>
+
+      <div class="cta-actions">
+        <a href="/networking/ftp-data-transfer/" class="cta-btn cta-btn-primary">
+          Browse articles
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 4l4 4-4 4" />
+          </svg>
+        </a>
+        <a href="/contributing/write-an-article/" class="cta-btn cta-btn-secondary">
+          Contribution guide
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* -------------------------------------------
+     CTA Section — centered call to action with
+     category tags and action buttons
+     ------------------------------------------- */
+  .cta {
+    background: var(--page-bg);
+    border-top: 1px solid var(--surface-100);
+  }
+
+  .cta-container {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 4rem 1.5rem;
+  }
+
+  .cta-content {
+    max-width: 48rem;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  /* --- Heading & subtitle --- */
+  .cta-heading {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.025em;
+  }
+
+  .cta-subtitle {
+    margin-top: 0.75rem;
+    color: #adb5bd;
+  }
+
+  :root[data-theme='dark'] .cta-subtitle {
+    color: #c8cad8;
+  }
+
+  /* --- Category tags --- */
+  .cta-tags {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+  }
+
+  .cta-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.875rem;
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    border: 1px solid var(--surface-200);
+    color: var(--surface-700);
+    background: #ffffff;
+    cursor: default;
+    transition: border-color 0.2s ease-out, color 0.2s ease-out, background-color 0.2s ease-out;
+  }
+
+  .cta-tag:hover {
+    border-color: #bac8ff;
+    color: #4263eb;
+    background: #f0f4ff;
+  }
+
+  :root[data-theme='dark'] .cta-tag {
+    border-color: #2e3150;
+    color: #8b8ea0;
+    background: #252740;
+  }
+
+  :root[data-theme='dark'] .cta-tag:hover {
+    border-color: #4c6ef5;
+    color: #91a7ff;
+    background: rgba(76, 110, 245, 0.1);
+  }
+
+  /* --- Action buttons --- */
+  .cta-actions {
+    margin-top: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: var(--font-sans);
+    transition: background-color 0.2s ease-out, border-color 0.2s ease-out;
+  }
+
+  .cta-btn-primary {
+    background: var(--accent);
+    color: #ffffff;
+    box-shadow: 0 1px 2px rgba(76, 110, 245, 0.2);
+  }
+
+  .cta-btn-primary:hover {
+    background: #4263eb;
+  }
+
+  :root[data-theme='dark'] .cta-btn-primary:hover {
+    background: #5c7cfa;
+  }
+
+  .cta-btn-secondary {
+    color: var(--surface-700);
+    border: 1px solid #dee2e6;
+  }
+
+  .cta-btn-secondary:hover {
+    border-color: #ced4da;
+    background: var(--surface-50);
+  }
+
+  :root[data-theme='dark'] .cta-btn-secondary {
+    border-color: #2e3150;
+  }
+
+  :root[data-theme='dark'] .cta-btn-secondary:hover {
+    border-color: rgba(200, 202, 216, 0.3);
+    background: #1f2133;
+  }
+</style>
