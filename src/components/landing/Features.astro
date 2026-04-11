@@ -1,0 +1,182 @@
+---
+/*
+  Features.astro — Value proposition grid for the landing page.
+
+  Displays three feature cards (Curated, Visual, Sourced) below a centered
+  heading and description. Renders as a 3-column grid on desktop and stacks
+  vertically on mobile.
+
+  No props — all content is static.
+*/
+---
+
+<section class="features">
+  <div class="features-container">
+    <div class="features-header">
+      <h2 class="features-heading">Documentation, reimagined.</h2>
+      <p class="features-description">
+        RFCs, man pages, and technical standards contain critical knowledge trapped in unreadable formats.
+        Pretty Docs rewrites them into clean, modern articles with diagrams, examples, and source
+        citations &mdash; without dumbing anything down.
+      </p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#4c6ef5" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+            <path d="M4 5h12M4 10h8M4 15h10" />
+          </svg>
+        </div>
+        <h3 class="feature-title">Curated, not generated</h3>
+        <p class="feature-text">
+          Every article is reviewed by humans for accuracy and clarity.
+          This is Wikipedia-quality curation, not chatbot output.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#4c6ef5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="6" height="6" rx="1" />
+            <rect x="11" y="3" width="6" height="6" rx="1" />
+            <rect x="3" y="11" width="6" height="6" rx="1" />
+            <rect x="11" y="11" width="6" height="6" rx="1" />
+          </svg>
+        </div>
+        <h3 class="feature-title">Visual where it matters</h3>
+        <p class="feature-text">
+          Proper diagrams, formatted tables, and syntax-highlighted examples
+          replace ASCII art and monospaced walls of text.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#4c6ef5" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+            <path d="M10 3v14M3 10h14" />
+            <circle cx="10" cy="10" r="7" />
+          </svg>
+        </div>
+        <h3 class="feature-title">Always sourced</h3>
+        <p class="feature-text">
+          Every claim links back to the original specification. Verify anything.
+          We complement the source, never replace it.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* -------------------------------------------
+     Features Section — value proposition grid
+     ------------------------------------------- */
+
+  .features {
+    background: #fafbfc;          /* surface-50 */
+    border-top: 1px solid #f1f3f5; /* surface-100 */
+    padding: 5rem 0;              /* py-20 (80px) */
+  }
+
+  :root[data-theme='dark'] .features {
+    background: #1f2133;          /* dark-surface */
+    border-top-color: #2e3150;    /* dark-border */
+  }
+
+  .features-container {
+    max-width: 72rem;             /* max-w-6xl */
+    margin: 0 auto;
+    padding: 0 1.5rem;            /* px-6 */
+  }
+
+  /* --- Header --- */
+
+  .features-header {
+    max-width: 48rem;             /* max-w-3xl */
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .features-heading {
+    font-size: 1.5rem;            /* text-2xl (24px) */
+    font-weight: 700;
+    color: #212529;               /* surface-900 */
+    letter-spacing: -0.025em;     /* tracking-tight */
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  :root[data-theme='dark'] .features-heading {
+    color: #e4e6f0;               /* dark-textBright */
+  }
+
+  .features-description {
+    margin-top: 1rem;             /* mt-4 */
+    font-size: 1rem;              /* text-base */
+    color: #868e96;               /* surface-600 */
+    line-height: 1.625;           /* leading-relaxed */
+  }
+
+  :root[data-theme='dark'] .features-description {
+    color: #c8cad8;               /* dark-text */
+  }
+
+  /* --- Grid --- */
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;                    /* gap-8 (32px) */
+    margin-top: 3.5rem;           /* mt-14 (56px) */
+    max-width: 56rem;             /* max-w-4xl */
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  @media (max-width: 767px) {
+    .features-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* --- Card --- */
+
+  .feature-icon {
+    width: 2.5rem;                /* w-10 (40px) */
+    height: 2.5rem;               /* h-10 (40px) */
+    border-radius: 0.75rem;       /* rounded-xl (12px) */
+    background: #dbe4ff;          /* brand-100 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;          /* mb-4 */
+  }
+
+  :root[data-theme='dark'] .feature-icon {
+    background: rgba(54, 79, 199, 0.2); /* brand-900 at 20% opacity */
+  }
+
+  .feature-title {
+    font-size: 0.875rem;          /* text-sm */
+    font-weight: 600;             /* font-semibold */
+    color: #212529;               /* surface-900 */
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  :root[data-theme='dark'] .feature-title {
+    color: #e4e6f0;               /* dark-textBright */
+  }
+
+  .feature-text {
+    margin-top: 0.5rem;           /* mt-2 */
+    font-size: 0.875rem;          /* text-sm */
+    color: #adb5bd;               /* surface-500 */
+    line-height: 1.625;           /* leading-relaxed */
+  }
+
+  :root[data-theme='dark'] .feature-text {
+    color: #c8cad8;               /* dark-text */
+  }
+</style>

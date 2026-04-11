@@ -3,13 +3,18 @@
   Landing page — Pretty Docs home.
 
   Standalone Astro page outside Starlight. Uses the Landing layout for HTML
-  shell, fonts, and dark mode sync. Currently renders a placeholder hero;
-  subsequent tasks will add BeforeAfter, Features, Cta, and Nav/Footer
-  components.
+  shell, fonts, and dark mode sync. Renders the LandingNav followed by the
+  Hero section; subsequent tasks will add BeforeAfter, Features, Cta, and
+  Footer components.
 */
 
 import Landing from '../layouts/Landing.astro';
 import LandingNav from '../components/landing/LandingNav.astro';
+import Hero from '../components/landing/Hero.astro';
+import BeforeAfter from '../components/landing/BeforeAfter.astro';
+import Features from '../components/landing/Features.astro';
+import Cta from '../components/landing/Cta.astro';
+import LandingFooter from '../components/landing/LandingFooter.astro';
 ---
 
 <Landing
@@ -17,94 +22,9 @@ import LandingNav from '../components/landing/LandingNav.astro';
   description="Beautiful, readable documentation for protocols, standards, and C libraries."
 >
   <LandingNav />
-  <main class="hero">
-    <div class="hero-inner">
-      <h1 class="hero-headline">
-        Old docs are ugly.<br />
-        <span class="hero-accent">These aren't.</span>
-      </h1>
-      <p class="hero-subtitle">
-        Pretty Docs rewrites RFCs, man pages, and technical standards into
-        beautiful, understandable articles. Open source. Community driven.
-        Always cites the original.
-      </p>
-      <div class="hero-actions">
-        <a href="/networking/ftp-data-transfer/" class="btn btn-primary">
-          Browse articles
-        </a>
-      </div>
-    </div>
-  </main>
+  <Hero />
+  <BeforeAfter />
+  <Features />
+  <Cta />
+  <LandingFooter />
 </Landing>
-
-<style>
-  .hero {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 80vh;
-    padding: 96px 24px 80px;
-  }
-
-  .hero-inner {
-    max-width: 640px;
-    text-align: center;
-  }
-
-  .hero-headline {
-    font-size: 3rem;
-    font-weight: 800;
-    line-height: 1.1;
-    letter-spacing: -0.025em;
-    color: var(--text-primary);
-    margin-bottom: 24px;
-  }
-
-  .hero-accent {
-    color: var(--accent);
-  }
-
-  .hero-subtitle {
-    font-size: 1.125rem;
-    line-height: 1.625;
-    color: var(--text-muted);
-    margin-bottom: 32px;
-    max-width: 520px;
-    margin-inline: auto;
-  }
-
-  .hero-actions {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 24px;
-    border-radius: 8px;
-    font-size: 0.9375rem;
-    font-weight: 600;
-    font-family: var(--font-sans);
-    line-height: 1.5;
-    transition: background-color 0.15s ease, box-shadow 0.15s ease;
-    cursor: pointer;
-    border: none;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: #ffffff;
-  }
-
-  .btn-primary:hover {
-    background: #4263eb;
-  }
-
-  :root[data-theme='dark'] .btn-primary:hover {
-    background: #5c7cfa;
-  }
-</style>
