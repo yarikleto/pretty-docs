@@ -96,7 +96,7 @@ starlight-toc a[aria-current='true'] {
 
 /* Article h2: bottom border for visual separation */
 .sl-markdown-content h2 {
-  border-bottom: 1px solid hsl(var(--sl-color-gray-4));
+  border-bottom: 1px solid hsl(var(--sl-color-gray-5));
   padding-bottom: 0.75rem;
   margin-bottom: 1.5rem;
   font-weight: 700;
