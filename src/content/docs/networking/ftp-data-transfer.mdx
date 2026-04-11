@@ -3,7 +3,23 @@ title: FTP Data Transfer
 description: How FTP moves files between computers — data types, structures, and transfer modes explained.
 ---
 
+import SourceRef from '../../../components/article/SourceRef.astro';
+import ThreeDimensions from '../../../components/diagrams/ThreeDimensions.astro';
+
 The File Transfer Protocol (FTP) defines a standard way to move files between a client and a server over a TCP/IP network. While the protocol handles authentication, directory listing, and connection management, its core purpose is **reliable data transfer**. This article covers the three pillars of FTP data transfer: data types, data structures, and transfer modes.
+
+## The Three Dimensions of a Transfer
+
+When FTP transfers a file, three independent parameters define how that data moves. Think of them as three axes of a coordinate system — each choice is independent of the others:
+
+1. **Data Type** — how to interpret the bytes (text vs. binary)
+2. **Data Structure** — how the file is organized (flat, records, or pages)
+3. **Transfer Mode** — how to send it over the wire (stream, blocks, or compressed)
+
+These three choices are set independently with the `TYPE`, `STRU`, and `MODE` commands before a transfer begins.
+
+<ThreeDimensions />
+<SourceRef section="3.1" quote="Data representation is handled in FTP by a user specifying a representation type." />
 
 ## Data Types
 
@@ -15,6 +31,8 @@ FTP supports several data representations to handle the differences between oper
 
 **EBCDIC type** exists for transfers between systems that use EBCDIC encoding (primarily IBM mainframes). It functions like ASCII type but uses EBCDIC as the transfer representation instead.
 
+<SourceRef section="3.1.1" quote="The data types are defined by the TYPE command." />
+
 ## Data Structures
 
 Beyond the type system, FTP defines how data is organized within a transfer. The structure determines whether the data is treated as a continuous stream or broken into logical units.
@@ -25,6 +43,8 @@ Beyond the type system, FTP defines how data is organized within a transfer. The
 
 **Page structure** allows files to be transferred as independent indexed pages. Each page has a header containing its index and metadata. This structure is rarely used in practice but was designed for systems where files are stored as non-contiguous pages (like some virtual memory systems).
 
+<SourceRef section="3.1.2" />
+
 ## Transfer Modes
 
 The transfer mode determines how data is formatted and sent through the data connection. The mode affects framing and error recovery, not the data representation (which is handled by the data type).
@@ -34,3 +54,5 @@ The transfer mode determines how data is formatted and sent through the data con
 **Block mode** wraps the data in a series of blocks, each with a header containing a count field and descriptor code. The descriptor indicates whether the block is the end of a record, end of file, or a restart marker. Block mode allows the data connection to remain open between transfers and supports restart of interrupted transfers.
 
 **Compressed mode** uses run-length encoding to compress the data before transmission. Runs of repeated bytes are replaced with a single byte and a repeat count. While this reduces bandwidth for certain types of data, modern alternatives like gzip compression at the application level or TLS compression have made this mode largely obsolete.
+
+<SourceRef section="3.4" quote="The next consideration in transferring data is choosing the appropriate transmission mode." />
