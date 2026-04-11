@@ -5,16 +5,17 @@
 Turn unreadable technical documentation into beautiful, understandable articles — open source, community-driven, always sourced.
 
 ## Current State
-Day zero. Vision and prototype approved by client. Handing off to architect for technical planning.
+Task breakdown approved. 22 tasks across 5 milestones. Ready for implementation. Starting with walking skeleton (TASK-001 through TASK-004).
 
 ## The Bet
 The world's most important technical knowledge (RFCs, standards, man pages) is trapped in formats from the 1970s. AI chatbots can explain it on the fly, but their answers are ephemeral, unverified, and lack proper diagrams. A curated, community-reviewed, beautifully presented alternative will become the go-to reference — the "Wikipedia of ugly docs."
 
 ## Strategic Priorities
-1. Architect designs the technical approach (Starlight customization, content structure)
-2. Build the landing page and first article (FTP Data Transfer)
-3. Create contribution guide + CLAUDE.md for AI-assisted writing
-4. Get client feedback on working product
+1. Complete walking skeleton (Milestone 0) — end-to-end flow works
+2. Build landing page (Milestone 1) — parallel with article CSS
+3. Build custom components + diagrams (Milestone 2-3)
+4. Write FTP article content + contributing pages (Milestone 4)
+5. Get client feedback on working product
 
 ## Product Vision
 See .claude/product-vision.md
@@ -49,6 +50,8 @@ Misha, 22, CS student. Needs to understand FTP/TCP for a networking course. Can'
 [2026-04-11] Dark mode toggle required. Client feedback. (Type 2)
 [2026-04-11] Scope is any technical documentation, not just protocols. Categories are dynamic. (Type 2)
 [2026-04-11] Contributors will use CLAUDE.md + Claude to write articles. AI-assisted workflow. (Type 2)
+[2026-04-11] System design approved. Landing page as custom Astro page outside Starlight. Inline SVG for diagrams. No Tailwind — vanilla CSS. (Type 2)
+[2026-04-11] Task breakdown approved. 5 milestones, 22 tasks. Walking skeleton first. (Type 2)
 
 ## Open Questions
 - Final branding — is "Pretty Docs" the name?
