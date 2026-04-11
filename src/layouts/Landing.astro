@@ -1,0 +1,153 @@
+---
+/*
+  Landing.astro — Standalone layout for the landing page.
+
+  This layout is independent from Starlight's page shell. It provides its own
+  HTML document structure, font loading, and dark mode detection while sharing
+  the same design tokens (CSS custom properties) and localStorage theme key
+  (`starlight-theme`) so dark mode state persists across the landing page and
+  Starlight article pages.
+
+  The inline dark mode script is render-blocking (placed in <head> before any
+  stylesheet) to prevent flash of wrong theme on page load.
+*/
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+
+    <!-- Favicon (Starlight default) -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!--
+      Dark mode detection — render-blocking to avoid flash.
+      Reads Starlight's localStorage key so theme persists between
+      the landing page and Starlight article pages.
+    -->
+    <script is:inline>
+      (function () {
+        // Mirror Starlight's theme detection exactly:
+        // 1. Read stored theme (may be 'light', 'dark', or 'auto')
+        // 2. Fall back to system preference, defaulting to dark
+        // 3. Normalize: anything that isn't 'light' becomes 'dark'
+        var stored = localStorage.getItem('starlight-theme');
+        var theme = stored || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        document.documentElement.dataset.theme = theme === 'light' ? 'light' : 'dark';
+      })();
+    </script>
+
+    <!-- Google Fonts — same families and weights as Starlight config -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  /* =============================================
+     Landing page tokens and base styles.
+     These mirror the design tokens from custom.css
+     so the landing page has visual consistency with
+     Starlight article pages.
+     ============================================= */
+
+  /* --- Reset --- */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* --- Light mode tokens --- */
+  :root {
+    --font-sans: 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    /* Brand / accent */
+    --brand-600: #4c6ef5;
+    --brand-400: #748ffc;
+
+    /* Surface / neutrals */
+    --surface-50: #fafbfc;
+    --surface-100: #f1f3f5;
+    --surface-200: #e9ecef;
+    --surface-500: #adb5bd;
+    --surface-600: #868e96;
+    --surface-700: #495057;
+    --surface-900: #212529;
+
+    /* Page */
+    --page-bg: #ffffff;
+    --text-primary: var(--surface-900);
+    --text-body: var(--surface-700);
+    --text-muted: var(--surface-600);
+    --accent: var(--brand-600);
+  }
+
+  /* --- Dark mode tokens --- */
+  :root[data-theme='dark'] {
+    --page-bg: #1a1b26;
+    --text-primary: #e4e6f0;
+    --text-body: #c8cad8;
+    --text-muted: #8b8ea0;
+    --accent: #748ffc;
+
+    --surface-50: #1f2133;
+    --surface-100: #252740;
+    --surface-200: #2e3150;
+    --surface-500: #6b6e82;
+    --surface-600: #6b6e82;
+    --surface-700: #c8cad8;
+    --surface-900: #e4e6f0;
+  }
+
+  /* --- Base styles --- */
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--page-bg);
+    color: var(--text-body);
+    line-height: 1.625;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  img {
+    max-width: 100%;
+    display: block;
+  }
+</style>
