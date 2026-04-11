@@ -75,19 +75,202 @@ body {
    3. Sidebar Overrides
    ======================================== */
 
-/* Active sidebar item styling */
-[data-current='true'] > a {
+/* Sidebar width: 256px (w-64) instead of Starlight's default 300px.
+   Applied via custom property so the grid layout adapts automatically. */
+:root {
+  --sl-sidebar-width: 16rem;
+}
+
+/* Sidebar background: surface-50 in light, dark-surface in dark.
+   Starlight uses --sl-color-bg-sidebar which maps to --sl-color-bg (white) in light.
+   We override it to our subtle gray. */
+:root[data-theme='light'] {
+  --sl-color-bg-sidebar: #fafbfc;
+}
+
+/* Category labels: uppercase 12px with wider tracking.
+   Starlight renders group labels inside <summary> > <span class="group-label"> > <span class="large">. */
+.sidebar-content .group-label .large {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #ced4da;
+}
+
+:root[data-theme='light'] .sidebar-content .group-label .large {
+  color: #ced4da;
+}
+
+:root[data-theme='dark'] .sidebar-content .group-label .large {
+  color: rgba(200, 202, 216, 0.5);
+}
+
+/* Sidebar link base: rounded-lg (8px) with comfortable padding.
+   Override Starlight's default 4px radius and tight padding.
+   Starlight scopes sidebar link styles with :where() (zero specificity),
+   so a simple .sidebar-content a selector wins without !important. */
+.sidebar-content ul a {
   border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  transition: background-color 200ms ease-out, color 200ms ease-out;
+}
+
+/* Sidebar link default colors */
+:root[data-theme='light'] .sidebar-content ul a {
+  color: #adb5bd;
+}
+
+:root[data-theme='dark'] .sidebar-content ul a {
+  color: rgba(200, 202, 216, 0.7);
+}
+
+/* Sidebar link hover */
+:root[data-theme='light'] .sidebar-content ul a:hover {
+  color: #495057;
+  background-color: #f1f3f5;
+}
+
+:root[data-theme='dark'] .sidebar-content ul a:hover {
+  color: #e4e6f0;
+  background-color: #252740;
+}
+
+/* Active sidebar item: bg-brand-50, text-brand-700, font-medium, rounded-lg (light)
+   Dark: brand-900/20 bg, brand-400 text.
+   Starlight uses [aria-current=page] on the <a> element.
+   We override both the base state and hover/focus to prevent Starlight defaults. */
+:root[data-theme='light'] .sidebar-content [aria-current='page'],
+:root[data-theme='light'] .sidebar-content [aria-current='page']:hover,
+:root[data-theme='light'] .sidebar-content [aria-current='page']:focus {
+  background-color: #f0f4ff;
+  color: #4263eb;
   font-weight: 500;
+  border-radius: 8px;
+}
+
+:root[data-theme='dark'] .sidebar-content [aria-current='page'],
+:root[data-theme='dark'] .sidebar-content [aria-current='page']:hover,
+:root[data-theme='dark'] .sidebar-content [aria-current='page']:focus {
+  background-color: rgba(54, 79, 199, 0.2);
+  color: #748ffc;
+  font-weight: 500;
+  border-radius: 8px;
+}
+
+/* Sidebar and nav borders: Starlight uses --sl-color-hairline-shade for the
+   sidebar right border, nav bottom border, etc. It is normally set to
+   var(--sl-color-black), but our color tokens are stored as bare HSL triplets
+   (without the hsl() wrapper), so we override the hairline variables with
+   complete hsl() colors to avoid broken border values. */
+:root {
+  --sl-color-hairline-shade: #e9ecef;
+  --sl-color-hairline-light: #f1f3f5;
+  --sl-color-hairline: #fafbfc;
+}
+
+:root[data-theme='dark'] {
+  --sl-color-hairline-shade: #2e3150;
+  --sl-color-hairline-light: #252740;
+  --sl-color-hairline: #1f2133;
 }
 
 /* ========================================
-   4. TOC Overrides
+   4. TOC (Right Sidebar) Overrides
    ======================================== */
 
-/* Active TOC link gets a left border accent */
-starlight-toc a[aria-current='true'] {
-  border-left: 2px solid hsl(var(--sl-color-accent));
+/* TOC width: 224px (w-56) instead of Starlight's default (same as sidebar 300px).
+   Starlight uses --sl-sidebar-width for BOTH sidebars in the grid. The right sidebar
+   container width is calculated from --sl-sidebar-width. We override the right sidebar
+   container directly to decouple it from the left sidebar. */
+@media (min-width: 72rem) {
+  .right-sidebar-container {
+    width: 14rem;
+  }
+
+  .right-sidebar-panel .sl-container {
+    width: 12rem;
+    max-width: 12rem;
+  }
+
+  /* Recalculate main pane width to account for narrower TOC.
+     Starlight's default assumes both sidebars are --sl-sidebar-width. */
+  [data-has-sidebar][data-has-toc] .main-pane {
+    width: calc(var(--sl-content-width) + (100% - var(--sl-content-width) - 14rem) / 2);
+  }
+}
+
+/* TOC border: transparent in light (prototype shows no visible border),
+   dark-border color in dark mode. Starlight uses --sl-color-hairline. */
+:root[data-theme='light'] .right-sidebar {
+  border-inline-start-color: transparent;
+}
+
+:root[data-theme='dark'] .right-sidebar {
+  border-inline-start-color: #2e3150;
+}
+
+/* TOC "On this page" heading: match prototype label style */
+.right-sidebar-panel h2 {
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem !important;
+}
+
+:root[data-theme='light'] .right-sidebar-panel h2 {
+  color: #ced4da !important;
+}
+
+:root[data-theme='dark'] .right-sidebar-panel h2 {
+  color: rgba(200, 202, 216, 0.5) !important;
+}
+
+/* TOC links: base styling with left border for scroll-aware indicator.
+   Default: subtle border, muted text. Active: brand-600 border and color. */
+.right-sidebar-panel a {
+  padding-block: 0.25rem;
+  padding-inline-start: 0.75rem;
+  border-left: 2px solid transparent;
+  transition: color 200ms ease-out, border-color 200ms ease-out;
+}
+
+:root[data-theme='light'] .right-sidebar-panel a {
+  border-left-color: #e9ecef;
+  color: #adb5bd !important;
+}
+
+:root[data-theme='light'] .right-sidebar-panel a:hover {
+  color: #343a40 !important;
+}
+
+:root[data-theme='dark'] .right-sidebar-panel a {
+  border-left-color: #2e3150;
+  color: rgba(200, 202, 216, 0.6) !important;
+}
+
+:root[data-theme='dark'] .right-sidebar-panel a:hover {
+  color: #e4e6f0 !important;
+}
+
+/* Active TOC link: brand-600 text with brand-600 left border (light).
+   brand-400 text with brand-400 left border (dark). */
+:root[data-theme='light'] starlight-toc a[aria-current='true'] {
+  color: #4c6ef5 !important;
+  border-left: 2px solid #4c6ef5;
+}
+
+:root[data-theme='dark'] starlight-toc a[aria-current='true'] {
+  color: #748ffc !important;
+  border-left: 2px solid #748ffc;
+}
+
+/* Nested TOC items (depth > 0): indented with pl-6 to match prototype */
+.right-sidebar-panel li[style*='--depth: 1'] a,
+starlight-toc ul ul a {
+  padding-inline-start: 1.5rem;
 }
 
 /* ========================================
