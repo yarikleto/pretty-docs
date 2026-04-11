@@ -1,0 +1,145 @@
+---
+/**
+ * ThreeDimensions — SVG diagram: the three axes of an FTP transfer.
+ *
+ * Shows TYPE (data types), STRU (data structures), and MODE (transfer modes)
+ * as three horizontal colored rows with inline option cards.
+ *
+ * Dark mode adaptation uses CSS classes defined in custom.css:
+ *   .diagram-bg, .diagram-card, .diagram-text-primary, .diagram-text-secondary,
+ *   .axis-card, .axis-card-text, .axis-card-sub
+ *
+ * Minimal walking-skeleton version — will be polished in TASK-017/TASK-018.
+ */
+---
+
+<div class="diagram-wrapper">
+  <svg viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="axisGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#4c6ef5" stop-opacity="0.1"/>
+        <stop offset="100%" stop-color="#4c6ef5" stop-opacity="0.03"/>
+      </linearGradient>
+      <linearGradient id="axisGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#37b24d" stop-opacity="0.1"/>
+        <stop offset="100%" stop-color="#37b24d" stop-opacity="0.03"/>
+      </linearGradient>
+      <linearGradient id="axisGrad3" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#f59f00" stop-opacity="0.1"/>
+        <stop offset="100%" stop-color="#f59f00" stop-opacity="0.03"/>
+      </linearGradient>
+    </defs>
+
+    {/* Axis 1: Data Type (indigo) */}
+    <rect class="axis-row" x="30" y="30" width="640" height="76" rx="12"
+          fill="url(#axisGrad1)" stroke="#bac8ff" stroke-width="1"/>
+    <text x="56" y="55" font-size="11" font-weight="700" fill="#4263eb"
+          letter-spacing="0.08em">TYPE</text>
+    <text x="56" y="72" font-size="11" fill="#748ffc">Data Type</text>
+
+    <rect class="axis-card" x="150" y="42" width="100" height="50" rx="8"
+          fill="white" stroke="#dbe4ff" stroke-width="1"/>
+    <text class="axis-card-text" x="200" y="63" font-size="12" font-weight="600"
+          fill="#212529" text-anchor="middle">ASCII</text>
+    <text class="axis-card-sub" x="200" y="78" font-size="10"
+          fill="#868e96" text-anchor="middle">Text (default)</text>
+
+    <rect class="axis-card" x="266" y="42" width="100" height="50" rx="8"
+          fill="white" stroke="#dbe4ff" stroke-width="1"/>
+    <text class="axis-card-text" x="316" y="63" font-size="12" font-weight="600"
+          fill="#212529" text-anchor="middle">Image</text>
+    <text class="axis-card-sub" x="316" y="78" font-size="10"
+          fill="#868e96" text-anchor="middle">Binary</text>
+
+    <rect class="axis-card" x="382" y="42" width="100" height="50" rx="8"
+          fill="white" stroke="#dbe4ff" stroke-width="1"/>
+    <text class="axis-card-text" x="432" y="63" font-size="12" font-weight="600"
+          fill="#212529" text-anchor="middle">EBCDIC</text>
+    <text class="axis-card-sub" x="432" y="78" font-size="10"
+          fill="#868e96" text-anchor="middle">Mainframe</text>
+
+    <rect class="axis-card" x="498" y="42" width="100" height="50" rx="8"
+          fill="white" stroke="#dbe4ff" stroke-width="1"/>
+    <text class="axis-card-text" x="548" y="63" font-size="12" font-weight="600"
+          fill="#212529" text-anchor="middle">Local</text>
+    <text class="axis-card-sub" x="548" y="78" font-size="10"
+          fill="#868e96" text-anchor="middle">Custom byte</text>
+
+    {/* Axis 2: Structure (green) */}
+    <rect class="axis-row" x="30" y="122" width="640" height="76" rx="12"
+          fill="url(#axisGrad2)" stroke="#b2f2bb" stroke-width="1"/>
+    <text x="56" y="147" font-size="11" font-weight="700" fill="#2b8a3e"
+          letter-spacing="0.08em">STRU</text>
+    <text x="56" y="164" font-size="11" fill="#51cf66">Structure</text>
+
+    <rect class="axis-card" x="150" y="134" width="130" height="50" rx="8"
+          fill="white" stroke="#b2f2bb" stroke-width="1"/>
+    <text class="axis-card-text" x="215" y="155" font-size="12" font-weight="600"
+          fill="#212529" text-anchor="middle">File</text>
+    <text class="axis-card-sub" x="215" y="170" font-size="10"
+          fill="#868e96" text-anchor="middle">No structure (default)</text>
+
+    <rect class="axis-card" x="296" y="134" width="130" height="50" rx="8"
+          fill="white" stroke="#b2f2bb" stroke-width="1"/>
+    <text class="axis-card-text" x="361" y="155" font-size="12" font-weight="600"
+          fill="#212529" text-anchor="middle">Record</text>
+    <text class="axis-card-sub" x="361" y="170" font-size="10"
+          fill="#868e96" text-anchor="middle">Sequential records</text>
+
+    <rect class="axis-card" x="442" y="134" width="130" height="50" rx="8"
+          fill="white" stroke="#b2f2bb" stroke-width="1"/>
+    <text class="axis-card-text" x="507" y="155" font-size="12" font-weight="600"
+          fill="#212529" text-anchor="middle">Page</text>
+    <text class="axis-card-sub" x="507" y="170" font-size="10"
+          fill="#868e96" text-anchor="middle">Indexed pages</text>
+
+    {/* Axis 3: Mode (amber) */}
+    <rect class="axis-row" x="30" y="214" width="640" height="76" rx="12"
+          fill="url(#axisGrad3)" stroke="#ffe066" stroke-width="1"/>
+    <text x="56" y="239" font-size="11" font-weight="700" fill="#e67700"
+          letter-spacing="0.08em">MODE</text>
+    <text x="56" y="256" font-size="11" fill="#fcc419">Transfer Mode</text>
+
+    <rect class="axis-card" x="150" y="226" width="130" height="50" rx="8"
+          fill="white" stroke="#ffe066" stroke-width="1"/>
+    <text class="axis-card-text" x="215" y="247" font-size="12" font-weight="600"
+          fill="#212529" text-anchor="middle">Stream</text>
+    <text class="axis-card-sub" x="215" y="262" font-size="10"
+          fill="#868e96" text-anchor="middle">Continuous (default)</text>
+
+    <rect class="axis-card" x="296" y="226" width="130" height="50" rx="8"
+          fill="white" stroke="#ffe066" stroke-width="1"/>
+    <text class="axis-card-text" x="361" y="247" font-size="12" font-weight="600"
+          fill="#212529" text-anchor="middle">Block</text>
+    <text class="axis-card-sub" x="361" y="262" font-size="10"
+          fill="#868e96" text-anchor="middle">Header + data</text>
+
+    <rect class="axis-card" x="442" y="226" width="130" height="50" rx="8"
+          fill="white" stroke="#ffe066" stroke-width="1"/>
+    <text class="axis-card-text" x="507" y="247" font-size="12" font-weight="600"
+          fill="#212529" text-anchor="middle">Compressed</text>
+    <text class="axis-card-sub" x="507" y="262" font-size="10"
+          fill="#868e96" text-anchor="middle">Run-length encoded</text>
+  </svg>
+</div>
+
+<style>
+  .diagram-wrapper {
+    background-color: #fafbfc;
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .diagram-wrapper svg text {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  :root[data-theme='dark'] .diagram-wrapper {
+    background-color: #1f2133;
+  }
+
+  :root[data-theme='dark'] .axis-row {
+    stroke-opacity: 0.3;
+  }
+</style>
