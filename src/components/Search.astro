@@ -327,6 +327,20 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
   /* ---- Results ---- */
   #starlight__search .pagefind-ui__results > * + * { margin-top: 1rem; }
   #starlight__search .pagefind-ui__result { border: 0; padding: 0; }
+  #starlight__search .pagefind-ui__result-thumb,
+  #starlight__search .pagefind-ui__result-inner { margin-top: 0; }
+
+  /* Page-level result title */
+  #starlight__search .pagefind-ui__result-inner > .pagefind-ui__result-title {
+    padding: 0.75rem 1rem 0.75rem 3rem;
+  }
+
+  /* Nested sub-result (section within a page) */
+  #starlight__search .pagefind-ui__result-nested {
+    position: relative;
+    padding: 0.5rem 1rem 0.5rem 3rem;
+    cursor: pointer;
+  }
 
   #starlight__search .pagefind-ui__result-title:not(:where(.pagefind-ui__result-nested *)),
   #starlight__search .pagefind-ui__result-nested {
@@ -350,6 +364,14 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
     background: rgba(76, 110, 245, 0.08);
   }
 
+  #starlight__search .pagefind-ui__result-inner {
+    align-items: stretch;
+    gap: 1px;
+  }
+  #starlight__search .pagefind-ui__result-inner > :first-child { border-radius: 6px 6px 0 0; }
+  #starlight__search .pagefind-ui__result-inner > :last-child { border-radius: 0 0 6px 6px; }
+
+  /* Result link */
   #starlight__search .pagefind-ui__result-link {
     position: unset;
     --pagefind-ui-text: #212529;
@@ -366,18 +388,16 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
     position: absolute;
     inset: 0;
   }
-  #starlight__search .pagefind-ui__result-nested {
-    cursor: pointer;
-  }
 
+  /* Excerpt text */
   #starlight__search .pagefind-ui__result-excerpt {
-    font-size: calc(1rem * 0.8);
+    font-size: 0.8rem;
     overflow-wrap: anywhere;
+    color: #868e96;
+    margin-top: 0.25rem;
   }
-
-  #starlight__search .pagefind-ui__result-inner {
-    align-items: stretch;
-    gap: 1px;
+  :root[data-theme='dark'] #starlight__search .pagefind-ui__result-excerpt {
+    color: #6b6e82;
   }
 
   /* ---- Mark highlights ---- */
