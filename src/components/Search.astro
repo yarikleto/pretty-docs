@@ -360,6 +360,16 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
   }
   #starlight__search .pagefind-ui__result-link:hover { text-decoration: none; }
 
+  /* Stretch link to cover entire result section (title + excerpt) */
+  #starlight__search .pagefind-ui__result-link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+  #starlight__search .pagefind-ui__result-nested {
+    cursor: pointer;
+  }
+
   #starlight__search .pagefind-ui__result-excerpt {
     font-size: calc(1rem * 0.8);
     overflow-wrap: anywhere;
