@@ -176,6 +176,16 @@ body {
   --sl-color-hairline: #1f2133;
 }
 
+/* Header background: Starlight's header is transparent by default, which causes
+   content to bleed through on scroll. Give it an opaque background. */
+:root[data-theme='light'] .header {
+  background-color: #ffffff;
+}
+
+:root[data-theme='dark'] .header {
+  background-color: #1a1b26;
+}
+
 /* ========================================
    4. TOC (Right Sidebar) Overrides
    ======================================== */
