@@ -20,6 +20,114 @@ import CppDataTypes from '../../../components/diagrams/CppDataTypes.astro';
 
 C++ is a general-purpose programming language created by Bjarne Stroustrup in 1979, first released in 1985. It supports procedural, object-oriented, and generic programming. C++ compiles to native machine code, giving direct control over hardware and memory — which makes it the standard choice for systems software, game engines, embedded systems, and high-performance applications. This cheatsheet is a comprehensive reference for building real applications in C++.
 
+## Getting Started
+
+### What is a Compiler?
+
+C++ is a **compiled language** — you write source code in `.cpp` files, then a **compiler** translates it into a native executable that your OS can run directly. There is no interpreter or runtime like Python or JavaScript.
+
+```
+source.cpp  →  [Compiler]  →  program (executable)
+```
+
+### Compilers
+
+| Compiler | Command | Platforms | Notes |
+|----------|---------|-----------|-------|
+| **GCC** (g++) | `g++` | Linux, macOS, Windows (MinGW) | Most common on Linux. Free, open-source. |
+| **Clang** (clang++) | `clang++` | macOS, Linux, Windows | Default on macOS (via Xcode). Better error messages. |
+| **MSVC** | `cl` | Windows | Comes with Visual Studio. Default on Windows. |
+
+All three support C++17 and C++20. For this cheatsheet, examples use `g++` — replace with `clang++` if you prefer, the flags are the same.
+
+### Installing a Compiler
+
+**macOS** — Clang is included with Xcode Command Line Tools:
+```bash
+xcode-select --install
+# Verify:
+clang++ --version
+```
+
+**Ubuntu / Debian:**
+```bash
+sudo apt update
+sudo apt install g++
+# Verify:
+g++ --version
+```
+
+**Fedora / RHEL:**
+```bash
+sudo dnf install gcc-c++
+```
+
+**Windows** — install one of:
+- [Visual Studio](https://visualstudio.microsoft.com/) (includes MSVC) — full IDE
+- [MSYS2](https://www.msys2.org/) (includes GCC/MinGW) — Unix-like terminal
+- [WSL](https://learn.microsoft.com/en-us/windows/wsl/) — run Ubuntu inside Windows, then `apt install g++`
+
+### Compiling and Running Your First Program
+
+Create a file called `hello.cpp`:
+
+```cpp
+#include <iostream>
+
+int main() {
+    std::cout << "Hello, World!" << std::endl;
+    return 0;
+}
+```
+
+Compile and run:
+
+```bash
+g++ hello.cpp -o hello    # compile
+./hello                    # run
+# Output: Hello, World!
+```
+
+### Compiler Flags
+
+| Flag | Purpose | Example |
+|------|---------|---------|
+| `-o name` | Name the output executable | `g++ main.cpp -o app` |
+| `-std=c++17` | Use C++17 standard | `g++ -std=c++17 main.cpp -o app` |
+| `-Wall` | Enable all common warnings | Catches potential bugs |
+| `-Wextra` | Enable extra warnings | Even more thorough |
+| `-Werror` | Treat warnings as errors | Forces you to fix all warnings |
+| `-g` | Include debug info | Required for `gdb` / `lldb` debugging |
+| `-O2` | Optimization level 2 | Faster executable, slower compile |
+| `-I path` | Add include directory | `g++ -I include main.cpp` |
+| `-l lib` | Link a library | `g++ main.cpp -lpthread` |
+| `-c` | Compile only (produce `.o`, don't link) | `g++ -c main.cpp -o main.o` |
+
+A typical development command:
+```bash
+g++ -std=c++17 -Wall -Wextra -Werror -g main.cpp -o app
+```
+
+A typical release build:
+```bash
+g++ -std=c++17 -O2 main.cpp -o app
+```
+
+### C++ Standards
+
+| Standard | Year | Key Features |
+|----------|------|-------------|
+| C++98 | 1998 | Original standard, STL, templates |
+| C++11 | 2011 | `auto`, lambdas, smart pointers, move semantics, `nullptr`, range-for |
+| C++14 | 2014 | Generic lambdas, `make_unique`, relaxed constexpr |
+| C++17 | 2017 | Structured bindings, `optional`, `variant`, `string_view`, `if constexpr` |
+| C++20 | 2020 | Concepts, ranges, coroutines, `std::format`, modules |
+| C++23 | 2023 | `std::expected`, `std::print`, `std::flat_map` |
+
+Use `-std=c++17` as a default — it has the best balance of modern features and compiler support. Most code in this cheatsheet uses C++17 or earlier.
+
+<SourceRef section="Getting Started" quote="cppreference.com" />
+
 ## Program Structure
 
 Every C++ program follows a standard structure: include header files, declare the namespace, and define the `main()` function as the entry point. The `#include` directive imports library headers, `using namespace std;` brings the standard library into scope, and `main()` is where execution begins.
