@@ -1,6 +1,6 @@
 # TASK-022: Final polish — responsiveness, accessibility, cross-browser, build verification
 **Milestone:** 4 — FTP Article Content & Contributing Pages
-**Status:** `TODO`
+**Status:** `IN_PROGRESS`
 **Size:** M | **Type:** polish
 **Depends on:** TASK-019, TASK-020, TASK-021
 **Blocks:** nothing (final task)
