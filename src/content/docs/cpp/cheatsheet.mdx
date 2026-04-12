@@ -528,7 +528,7 @@ v.clear();          // Remove all elements
 
 ### References
 
-A **reference** is an alias for an existing variable. It shares the same memory address as the original and cannot be reassigned to refer to a different variable after initialization.
+A **reference** is an alias for an existing variable. It shares the same memory address as the original and cannot be reassigned after initialization.
 
 ```cpp
 int x = 10;
@@ -538,23 +538,159 @@ ref = 22;         // modifies x
 cout << x << endl; // 22
 ```
 
+| Rule | Example |
+|------|---------|
+| Must be initialized at declaration | `int& r = x;` (not `int& r;`) |
+| Cannot be reassigned | After `int& r = x;`, `r = y;` changes x's value, not the binding |
+| Cannot be null | References always refer to a valid object |
+
 <SourceRef section="References" />
 
 ### Pointers
 
-A **pointer** is a variable that stores the memory address of another variable. The address-of operator `&` retrieves a variable's address. The dereference operator `*` accesses the value at a pointer's address.
+A **pointer** is a variable that stores the memory address of another variable. The address-of operator `&` retrieves a variable's address. The dereference operator `*` accesses the value at the address.
 
 ```cpp
 int var = 10;
 int *ptr = &var;   // ptr holds the address of var
 
-cout << "Value of x: " << var << endl;
-cout << "Address of x: " << &var << endl;
-cout << "Value stored in pointer ptr: " << ptr << endl;
-cout << "Value pointed to by ptr: " << *ptr << endl;
+cout << var;       // 10          (value)
+cout << &var;      // 0x7ffc...   (address)
+cout << ptr;       // 0x7ffc...   (same address)
+cout << *ptr;      // 10          (dereference — value at address)
+
+*ptr = 20;         // modifies var through the pointer
+cout << var;       // 20
 ```
 
-<SourceRef section="Pointers" />
+### nullptr
+
+**`nullptr`** (C++11) is a type-safe null pointer constant. Always use it instead of `NULL` or `0`.
+
+```cpp
+int* ptr = nullptr;
+
+if (ptr == nullptr) {
+    cout << "Pointer is null" << endl;
+}
+
+// Shorthand — nullptr evaluates to false
+if (!ptr) {
+    cout << "Pointer is null" << endl;
+}
+```
+
+### Pointer Arithmetic
+
+Pointers support arithmetic that moves by the size of the pointed-to type.
+
+```cpp
+int arr[5] = {10, 20, 30, 40, 50};
+int* p = arr;      // points to arr[0]
+
+cout << *p;         // 10
+cout << *(p + 1);   // 20       (next int, 4 bytes forward)
+cout << *(p + 3);   // 40
+p++;                 // now points to arr[1]
+cout << *p;         // 20
+
+// Distance between pointers
+int* start = &arr[0];
+int* end = &arr[4];
+cout << (end - start);  // 4 (elements, not bytes)
+```
+
+### Pointers and Arrays
+
+An array name decays to a pointer to its first element. This is why arrays and pointers are often interchangeable.
+
+```cpp
+int arr[3] = {10, 20, 30};
+int* p = arr;              // arr decays to &arr[0]
+
+// These are equivalent:
+cout << arr[1];            // 20
+cout << *(arr + 1);        // 20
+cout << p[1];              // 20
+cout << *(p + 1);          // 20
+```
+
+### const Pointers
+
+| Declaration | Can change value? | Can change pointer? |
+|------------|-------------------|-------------------|
+| `int* p` | Yes | Yes |
+| `const int* p` | No | Yes |
+| `int* const p` | Yes | No |
+| `const int* const p` | No | No |
+
+```cpp
+int x = 10, y = 20;
+
+const int* ptr1 = &x;     // pointer to const int
+// *ptr1 = 30;             // ERROR: cannot change value
+ptr1 = &y;                 // OK: can change where it points
+
+int* const ptr2 = &x;     // const pointer to int
+*ptr2 = 30;                // OK: can change value
+// ptr2 = &y;              // ERROR: cannot change pointer
+```
+
+Read it right-to-left: `const int* p` — "p is a pointer to int that is const". `int* const p` — "p is a const pointer to int".
+
+### Pointers to Objects
+
+Use the arrow operator `->` to access members through a pointer.
+
+```cpp
+struct Point { int x, y; };
+
+Point p = {3, 4};
+Point* ptr = &p;
+
+cout << ptr->x;     // 3   (same as (*ptr).x)
+cout << ptr->y;     // 4
+ptr->x = 10;        // modify through pointer
+```
+
+### Function Pointers
+
+A **function pointer** stores the address of a function. Useful for callbacks and strategy patterns.
+
+```cpp
+int add(int a, int b) { return a + b; }
+int mul(int a, int b) { return a * b; }
+
+// Declare function pointer
+int (*op)(int, int) = add;
+cout << op(3, 4);    // 7
+
+op = mul;
+cout << op(3, 4);    // 12
+
+// As function parameter
+void apply(int a, int b, int (*fn)(int, int)) {
+    cout << fn(a, b) << endl;
+}
+apply(5, 3, add);    // 8
+apply(5, 3, mul);    // 15
+```
+
+:::note
+Prefer `std::function` or lambdas over raw function pointers in modern C++. Function pointers cannot capture state; lambdas and `std::function` can.
+:::
+
+### Pointers vs References — When to Use Which
+
+| | Pointer | Reference |
+|-|---------|-----------|
+| Can be null | Yes | No |
+| Can be reassigned | Yes | No |
+| Can do arithmetic | Yes | No |
+| Syntax | `*ptr`, `ptr->member` | Direct use, like the original |
+| Use for | Optional values, dynamic memory, arrays, polymorphism | Function parameters, aliases, operator overloading |
+
+<SourceRef section="Pointers" quote="cppreference.com" />
 
 ## Functions
 
@@ -1432,43 +1568,175 @@ Always pair `new` with `delete` and `new[]` with `delete[]`. Mismatching them ca
 
 ## Smart Pointers
 
-**Smart pointers** (C++11, `<memory>`) automate memory management by destroying the owned object when the pointer goes out of scope.
+**Smart pointers** (C++11, `<memory>`) automate memory management by destroying the owned object when the pointer goes out of scope. They eliminate manual `new`/`delete` and the bugs that come with it.
+
+### Which Smart Pointer to Use?
+
+| Smart Pointer | Ownership | Copy? | Use When |
+|---------------|-----------|-------|----------|
+| `unique_ptr` | Exclusive (one owner) | No (move only) | Default choice. One clear owner. |
+| `shared_ptr` | Shared (reference counted) | Yes | Multiple owners need the same object |
+| `weak_ptr` | Non-owning observer | N/A | Break circular references, optional access to shared object |
 
 ### `unique_ptr`
 
-**`unique_ptr`** owns an object exclusively — it cannot be copied, only moved.
+**`unique_ptr`** owns an object exclusively — it cannot be copied, only moved. This is the **default smart pointer** you should reach for.
 
 ```cpp
 #include <memory>
 
-unique_ptr<int> p = make_unique<int>(42);
-cout << *p;  // 42
-// unique_ptr<int> p2 = p;          // ERROR: cannot copy
-unique_ptr<int> p2 = move(p);       // OK: transfers ownership
+// Create
+auto p = make_unique<int>(42);         // preferred
+unique_ptr<int> p2(new int(42));       // also works
+
+// Use — just like a raw pointer
+cout << *p;          // 42
+*p = 100;
+
+// Transfer ownership
+unique_ptr<int> p3 = move(p);          // p is now nullptr
+// unique_ptr<int> p4 = p3;            // ERROR: cannot copy
+
+// unique_ptr with arrays
+auto arr = make_unique<int[]>(5);      // array of 5 ints
+arr[0] = 10;
+```
+
+| Method | Description |
+|--------|-------------|
+| `*ptr` | Dereference (access value) |
+| `ptr->member` | Access member of pointed-to object |
+| `ptr.get()` | Get raw pointer (non-owning) |
+| `ptr.reset()` | Delete owned object, set to nullptr |
+| `ptr.reset(new_ptr)` | Delete owned, take ownership of new_ptr |
+| `ptr.release()` | Release ownership, return raw pointer (caller must delete) |
+| `move(ptr)` | Transfer ownership to another unique_ptr |
+| `if (ptr)` | Check if non-null |
+
+**Common pattern — factory functions:**
+
+```cpp
+class Widget { /* ... */ };
+
+unique_ptr<Widget> createWidget(int type) {
+    if (type == 1) return make_unique<WidgetA>();
+    if (type == 2) return make_unique<WidgetB>();
+    return nullptr;
+}
+
+auto w = createWidget(1);   // caller owns the widget
 ```
 
 ### `shared_ptr`
 
-**`shared_ptr`** allows multiple pointers to share ownership. The object is destroyed when the last `shared_ptr` is destroyed.
+**`shared_ptr`** allows multiple pointers to share ownership of an object. An internal reference count tracks how many `shared_ptr`s point to the object. The object is destroyed when the last one is destroyed or reset.
 
 ```cpp
-shared_ptr<int> a = make_shared<int>(10);
-shared_ptr<int> b = a;   // reference count: 2
-cout << a.use_count();    // 2
+auto a = make_shared<int>(10);
+cout << a.use_count();    // 1
+
+{
+    shared_ptr<int> b = a;    // reference count: 2
+    shared_ptr<int> c = a;    // reference count: 3
+    cout << a.use_count();    // 3
+}   // b and c destroyed, count drops to 1
+
+cout << a.use_count();    // 1
+// a destroyed at end of scope, object deleted
 ```
+
+| Method | Description |
+|--------|-------------|
+| `ptr.use_count()` | Current reference count |
+| `ptr.unique()` | True if `use_count() == 1` (deprecated C++17, removed C++20) |
+| `ptr.reset()` | Release this pointer's ownership (decrements count) |
+| `ptr.get()` | Get raw pointer |
+
+:::caution
+Never create two `shared_ptr`s from the same raw pointer — this creates two independent reference counts that will both try to delete the object.
+
+```cpp
+int* raw = new int(42);
+shared_ptr<int> a(raw);
+shared_ptr<int> b(raw);   // BUG: double delete!
+
+// Correct: copy from existing shared_ptr
+shared_ptr<int> c = a;     // shares ownership with a
+```
+:::
 
 ### `weak_ptr`
 
-**`weak_ptr`** observes an object owned by `shared_ptr` without affecting the reference count. Used to break circular references.
+**`weak_ptr`** observes an object owned by `shared_ptr` without affecting the reference count. Used to break **circular references** that would otherwise leak memory.
 
 ```cpp
 shared_ptr<int> sp = make_shared<int>(5);
 weak_ptr<int> wp = sp;
 
-if (auto locked = wp.lock()) {  // convert to shared_ptr
-    cout << *locked;  // 5
+cout << wp.use_count();   // 1 (counts shared_ptrs only)
+cout << wp.expired();     // false
+
+// Must lock() to access the value — returns shared_ptr or nullptr
+if (auto locked = wp.lock()) {
+    cout << *locked;      // 5
 }
+
+sp.reset();                // object destroyed
+cout << wp.expired();     // true
+auto locked = wp.lock();  // returns nullptr
 ```
+
+**Circular reference problem:**
+
+```cpp
+struct Node {
+    shared_ptr<Node> next;   // if both nodes point to each other,
+                              // neither is ever deleted (reference count never reaches 0)
+};
+
+// Fix: use weak_ptr for back-references
+struct Node {
+    shared_ptr<Node> next;
+    weak_ptr<Node> prev;     // does not prevent deletion
+};
+```
+
+### Smart Pointers with Polymorphism
+
+Smart pointers work naturally with base/derived classes and virtual functions.
+
+```cpp
+class Shape {
+public:
+    virtual double area() const = 0;
+    virtual ~Shape() = default;
+};
+
+class Circle : public Shape {
+    double r;
+public:
+    Circle(double r) : r(r) {}
+    double area() const override { return 3.14159 * r * r; }
+};
+
+// Store derived types through base pointer
+vector<unique_ptr<Shape>> shapes;
+shapes.push_back(make_unique<Circle>(5.0));
+
+for (auto& s : shapes)
+    cout << s->area() << endl;   // 78.5397 — virtual dispatch works
+```
+
+### Smart Pointer Best Practices
+
+| Do | Don't |
+|----|-------|
+| Use `make_unique` / `make_shared` | Use `new` directly with smart pointers |
+| Default to `unique_ptr` | Default to `shared_ptr` "just in case" |
+| Pass `unique_ptr` by value to transfer ownership | Pass smart pointers by reference when ownership isn't changing |
+| Pass raw pointer or reference when function doesn't affect lifetime | Pass `shared_ptr` to every function (spreads reference counting overhead) |
+| Use `weak_ptr` for caches and back-references | Create circular `shared_ptr` references |
+| Use `unique_ptr` for polymorphic containers | Use raw `new`/`delete` for polymorphic objects |
 
 <SourceRef section="Smart Pointers" quote="cppreference.com" />
 
