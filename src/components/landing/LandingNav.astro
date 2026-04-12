@@ -28,7 +28,7 @@
 
     <!-- Right side: search + links + GitHub + theme toggle -->
     <div class="landing-nav-actions">
-      <button class="landing-search-btn" type="button" aria-label="Search">
+      <a href={`${import.meta.env.BASE_URL}/networking/ftp-data-transfer/#_search`} class="landing-search-btn" aria-label="Search">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
           <circle cx="11" cy="11" r="7" />
           <path d="m21 21-4.35-4.35" />
@@ -37,7 +37,7 @@
         <kbd class="landing-search-kbd">
           <kbd>⌘</kbd><kbd>K</kbd>
         </kbd>
-      </button>
+      </a>
       <a href={`${import.meta.env.BASE_URL}/networking/ftp-data-transfer/`} class="landing-nav-link">Articles</a>
       <a href={`${import.meta.env.BASE_URL}/contributing/write-an-article/`} class="landing-nav-link">Contribute</a>
       <a
@@ -67,14 +67,6 @@
     </div>
   </div>
 </nav>
-
-<!-- Search modal -->
-<dialog class="landing-search-dialog" aria-label="Search">
-  <div class="landing-search-dialog-frame">
-    <div id="landing-search"></div>
-    <button class="landing-search-close" type="button">Cancel</button>
-  </div>
-</dialog>
 
 <script>
   // Theme select — syncs with Starlight's localStorage key.
@@ -114,70 +106,6 @@
 
   initThemeSelect();
   document.addEventListener('astro:after-swap', initThemeSelect);
-
-  // --- Search modal with Pagefind ---
-  const BASE = document.querySelector('meta[name="base-url"]')?.content || '';
-
-  let pagefindLoaded = false;
-  const dialog = document.querySelector('.landing-search-dialog');
-  const searchBtn = document.querySelector('.landing-search-btn');
-  const closeBtn = document.querySelector('.landing-search-close');
-
-  async function openSearch() {
-    if (!dialog) return;
-    dialog.showModal();
-    document.body.style.overflow = 'hidden';
-
-    if (!pagefindLoaded) {
-      pagefindLoaded = true;
-      // Load Pagefind UI dynamically
-      const base = `${BASE}/pagefind/`;
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = base + 'pagefind-ui.css';
-      document.head.appendChild(link);
-
-      const script = document.createElement('script');
-      script.src = base + 'pagefind-ui.js';
-      script.onload = () => {
-        new PagefindUI({
-          element: '#landing-search',
-          showSubResults: true,
-          bundlePath: base,
-          baseUrl: BASE + '/',
-        });
-        // Focus the input
-        setTimeout(() => {
-          dialog.querySelector('input')?.focus();
-        }, 100);
-      };
-      document.head.appendChild(script);
-    } else {
-      setTimeout(() => dialog.querySelector('input')?.focus(), 50);
-    }
-  }
-
-  function closeSearch() {
-    if (!dialog) return;
-    dialog.close();
-    document.body.style.overflow = '';
-  }
-
-  searchBtn?.addEventListener('click', openSearch);
-  closeBtn?.addEventListener('click', closeSearch);
-  dialog?.addEventListener('click', (e) => {
-    if (e.target === dialog) closeSearch();
-  });
-
-  // Cmd+K / Ctrl+K shortcut
-  document.addEventListener('keydown', (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-      e.preventDefault();
-      if (dialog?.open) closeSearch();
-      else openSearch();
-    }
-    if (e.key === 'Escape' && dialog?.open) closeSearch();
-  });
 </script>
 
 <style>
@@ -257,7 +185,7 @@
     align-items: center;
   }
 
-  /* --- Search button --- */
+  /* --- Search button (link to Starlight search) --- */
   .landing-search-btn {
     display: flex;
     align-items: center;
@@ -271,6 +199,7 @@
     font-family: inherit;
     cursor: pointer;
     transition: border-color 0.15s ease, color 0.15s ease;
+    text-decoration: none;
   }
 
   .landing-search-btn:hover {
@@ -320,80 +249,6 @@
 
   :root[data-theme='dark'] .landing-search-kbd kbd {
     border-color: #2e3150;
-  }
-
-  /* --- Search dialog --- */
-  .landing-search-dialog {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    max-width: 100%;
-    height: 100%;
-    max-height: 100%;
-    margin: 0;
-    padding: 0;
-    border: none;
-    background: transparent;
-    z-index: 100;
-  }
-
-  .landing-search-dialog::backdrop {
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(4px);
-  }
-
-  @media (min-width: 50rem) {
-    .landing-search-dialog {
-      margin: 4rem auto auto;
-      width: 90%;
-      max-width: 40rem;
-      height: max-content;
-      min-height: 15rem;
-      max-height: calc(100% - 8rem);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-  }
-
-  .landing-search-dialog-frame {
-    background: #fff;
-    border: 1px solid var(--surface-200);
-    border-radius: 12px;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
-    padding: 1rem;
-    overflow: auto;
-    max-height: calc(100vh - 8rem);
-  }
-
-  :root[data-theme='dark'] .landing-search-dialog-frame {
-    background: #1a1b26;
-    border-color: #2e3150;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
-  }
-
-  .landing-search-close {
-    display: block;
-    margin-top: 0.75rem;
-    width: 100%;
-    padding: 0.5rem;
-    background: transparent;
-    border: 1px solid var(--surface-200);
-    border-radius: 8px;
-    color: var(--surface-500);
-    font: inherit;
-    font-size: 0.8125rem;
-    cursor: pointer;
-  }
-
-  :root[data-theme='dark'] .landing-search-close {
-    border-color: #2e3150;
-    color: #6b6e82;
-  }
-
-  @media (min-width: 50rem) {
-    .landing-search-close {
-      display: none;
-    }
   }
 
   /* --- Theme select dropdown --- */
