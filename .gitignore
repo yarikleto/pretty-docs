@@ -23,7 +23,6 @@ pnpm-debug.log*
 # playwright / testing artifacts
 .playwright-mcp/
 test-results/
-*.test.mjs
 
 # editor
 .vscode/
