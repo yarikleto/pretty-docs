@@ -12,12 +12,13 @@ export default defineConfig({
 		starlight({
 			title: 'Pretty Docs',
 			customCss: ['./src/styles/custom.css'],
+			components: {
+				Search: './src/components/Search.astro',
+			},
 			head: [
 				{ tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.googleapis.com' } },
 				{ tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: true } },
 				{ tag: 'link', attrs: { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap' } },
-				// Auto-open search when navigating from landing page with #_search
-				{ tag: 'script', content: `if(location.hash==="#_search"){history.replaceState(null,"",location.pathname);setTimeout(()=>{document.querySelector("button[data-open-modal]")?.click()},200)}` },
 			],
 			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/yarikleto/pretty-docs' }],
 			sidebar: [
