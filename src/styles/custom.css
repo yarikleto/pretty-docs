@@ -563,6 +563,13 @@ site-search dialog::backdrop {
   backdrop-filter: blur(4px) !important;
 }
 
+/* Remove min-height so dialog is compact when empty */
+@media (min-width: 50rem) {
+  site-search dialog {
+    min-height: auto !important;
+  }
+}
+
 /* --- Pagefind UI variables (Starlight maps these) --- */
 #starlight__search {
   --pagefind-ui-primary: #4c6ef5;
