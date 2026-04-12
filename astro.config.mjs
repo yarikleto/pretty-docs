@@ -3,7 +3,7 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 
 export default defineConfig({
-	site: 'https://yaroslavpakhaliuk.github.io',
+	site: 'https://yarikleto.github.io',
 	base: '/pretty-docs',
 	integrations: [
 		starlight({
@@ -14,7 +14,7 @@ export default defineConfig({
 				{ tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: true } },
 				{ tag: 'link', attrs: { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap' } },
 			],
-			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/YaroslavPakhaliuk/pretty-docs' }],
+			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/yarikleto/pretty-docs' }],
 			sidebar: [
 				{
 					label: 'Networking',

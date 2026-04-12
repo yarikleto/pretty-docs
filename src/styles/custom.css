@@ -514,3 +514,47 @@ code:not(pre code) {
   --pd-important-bg: rgba(245, 159, 0, 0.1);
   --pd-important-border: #fcc419;
 }
+
+/* ========================================
+   10. Pagefind Search Modal Overrides
+   ======================================== */
+
+/* Override Pagefind's CSS variables to match Pretty Docs design tokens */
+:root {
+  --pf-text: #212529;
+  --pf-text-secondary: #495057;
+  --pf-text-muted: #868e96;
+  --pf-background: #ffffff;
+  --pf-border: #e9ecef;
+  --pf-border-focus: #4c6ef5;
+  --pf-skeleton: #f1f3f5;
+  --pf-skeleton-shine: #fafbfc;
+  --pf-hover: #f0f4ff;
+  --pf-mark: #4c6ef5;
+  --pf-scroll-shadow: rgba(0, 0, 0, 0.06);
+  --pf-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --pf-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --pf-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
+  --pf-outline-focus: #4c6ef5;
+  --pf-font: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+:root[data-theme='dark'] {
+  --pf-text: #e4e6f0;
+  --pf-text-secondary: #c8cad8;
+  --pf-text-muted: #6b6e82;
+  --pf-background: #1f2133;
+  --pf-border: #2e3150;
+  --pf-border-focus: #748ffc;
+  --pf-skeleton: #252740;
+  --pf-skeleton-shine: #2e3150;
+  --pf-hover: rgba(76, 110, 245, 0.1);
+  --pf-mark: #748ffc;
+  --pf-scroll-shadow: rgba(0, 0, 0, 0.2);
+  --pf-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.4);
+  --pf-outline-focus: #748ffc;
+  --pf-error-bg: rgba(250, 82, 82, 0.1);
+  --pf-error-border: #2e3150;
+  --pf-error-text: #ff6b6b;
+  --pf-error-text-secondary: #fa5252;
+}
