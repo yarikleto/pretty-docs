@@ -116,12 +116,13 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
   customElements.define('site-search', SiteSearch);
 </script>
 
-<style>
-  site-search {
-    display: contents;
-  }
+<style is:global>
+  @import url('@pagefind/default-ui/css/ui.css') layer(starlight.core);
 
-  button[data-open-modal] {
+  /* ---- site-search custom element ---- */
+  site-search { display: contents; }
+
+  site-search button[data-open-modal] {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -132,9 +133,8 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
     height: 2.5rem;
     font-size: var(--sl-text-xl, 1rem);
   }
-
   @media (min-width: 50rem) {
-    button[data-open-modal] {
+    site-search button[data-open-modal] {
       border: 1px solid var(--sl-color-gray-5, var(--surface-200, #e9ecef));
       border-radius: 0.5rem;
       padding-inline-start: 0.75rem;
@@ -145,23 +145,21 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
       width: 100%;
       max-width: 22rem;
     }
-    button[data-open-modal]:hover {
+    site-search button[data-open-modal]:hover {
       border-color: var(--sl-color-gray-2, var(--surface-300, #dee2e6));
       color: var(--sl-color-white, var(--surface-700, #495057));
     }
-    button[data-open-modal] > :last-child {
+    site-search button[data-open-modal] > :last-child {
       margin-inline-start: auto;
     }
   }
 
-  .search-label {
-    display: none;
-  }
+  site-search .search-label { display: none; }
   @media (min-width: 50rem) {
-    .search-label { display: block; }
+    site-search .search-label { display: block; }
   }
 
-  .search-kbd {
+  site-search .search-kbd {
     display: none;
     border-radius: 0.25rem;
     font-size: var(--sl-text-2xs, 0.625rem);
@@ -170,14 +168,14 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
     background: var(--sl-color-gray-6, var(--surface-100, #f1f3f5));
   }
   @media (min-width: 50rem) {
-    .search-kbd { display: inline-flex; }
+    site-search .search-kbd { display: inline-flex; }
   }
 
-  kbd {
+  site-search kbd {
     font-family: var(--__sl-font, 'Inter', system-ui, sans-serif);
   }
 
-  dialog {
+  site-search dialog {
     margin: 0;
     padding: 0;
     background: var(--sl-color-gray-6, #fff);
@@ -188,14 +186,14 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
     max-height: 100%;
     box-shadow: var(--sl-shadow-lg, 0 16px 48px rgba(0,0,0,0.12));
   }
-  dialog[open] { display: flex; }
-  dialog::backdrop {
+  site-search dialog[open] { display: flex; }
+  site-search dialog::backdrop {
     background: var(--sl-color-backdrop-overlay, rgba(0,0,0,0.4));
+    -webkit-backdrop-filter: blur(0.25rem);
     backdrop-filter: blur(0.25rem);
   }
-
   @media (min-width: 50rem) {
-    dialog {
+    site-search dialog {
       margin: 4rem auto auto;
       border-radius: 0.5rem;
       width: 90%;
@@ -205,7 +203,7 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
     }
   }
 
-  .dialog-frame {
+  site-search .dialog-frame {
     position: relative;
     overflow: auto;
     display: flex;
@@ -215,10 +213,10 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
     padding: 1rem;
   }
   @media (min-width: 50rem) {
-    .dialog-frame { padding: 1.5rem; }
+    site-search .dialog-frame { padding: 1.5rem; }
   }
 
-  .close-btn {
+  site-search .close-btn {
     position: absolute;
     z-index: 1;
     align-self: flex-end;
@@ -232,22 +230,15 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
     color: var(--sl-color-text-accent, #4c6ef5);
   }
   @media (min-width: 50rem) {
-    .close-btn { display: none; }
+    site-search .close-btn { display: none; }
   }
 
-  .dev-warning {
+  site-search .dev-warning {
     margin: auto;
     text-align: center;
     color: var(--sl-color-gray-2, var(--surface-500, #adb5bd));
     font-size: 0.875rem;
   }
-  .dev-warning code {
-    font-size: 0.8125rem;
-  }
-</style>
-
-<style is:global>
-  @import url('@pagefind/default-ui/css/ui.css') layer(starlight.core);
 
   [data-search-modal-open] { overflow: hidden; }
 
