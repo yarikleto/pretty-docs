@@ -1,0 +1,220 @@
+---
+/**
+ * FtpModel -- SVG diagram: the FTP architecture model from RFC 959 Section 2.3.
+ *
+ * Shows the two-connection architecture that is the key mental model of FTP:
+ *   - User side: User Interface -> User-PI -> User-DTP
+ *   - Server side: Server-PI -> Server-DTP -> File System
+ *   - Control connection (port 21) between User-PI and Server-PI
+ *   - Data connection (port 20) between User-DTP and Server-DTP
+ *
+ * The control connection carries commands and replies (Telnet protocol).
+ * The data connection opens and closes per transfer.
+ *
+ * Dark mode adaptation uses CSS classes defined in custom.css section 8:
+ *   .axis-card, .axis-card-text, .axis-card-sub
+ * Plus scoped styles below for the container and connection lines.
+ */
+---
+
+<div class="diagram-wrapper ftp-model">
+  <svg viewBox="0 0 720 340" class="ftp-model-svg" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="fm-arrow-indigo" viewBox="0 0 10 10" refX="9" refY="5"
+              markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0,1 L9,5 L0,9" fill="none" stroke="#4c6ef5" stroke-width="1.5"/>
+      </marker>
+      <marker id="fm-arrow-green" viewBox="0 0 10 10" refX="9" refY="5"
+              markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0,1 L9,5 L0,9" fill="none" stroke="#37b24d" stroke-width="1.5"/>
+      </marker>
+      <marker id="fm-arrow-gray" viewBox="0 0 10 10" refX="9" refY="5"
+              markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0,1 L9,5 L0,9" fill="none" stroke="#adb5bd" stroke-width="1.5"/>
+      </marker>
+      <marker id="fm-arrow-gray-dark" viewBox="0 0 10 10" refX="9" refY="5"
+              markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0,1 L9,5 L0,9" fill="none" stroke="#6b6e82" stroke-width="1.5"/>
+      </marker>
+    </defs>
+
+    {/* ── Group labels ────────────────────────── */}
+    <text class="ftp-model-group-label" x="150" y="28" font-size="11" font-weight="700"
+          fill="#4263eb" letter-spacing="0.08em" text-anchor="middle">USER</text>
+    <text class="ftp-model-group-label" x="570" y="28" font-size="11" font-weight="700"
+          fill="#4263eb" letter-spacing="0.08em" text-anchor="middle">SERVER</text>
+
+    {/* ── User side boxes ─────────────────────── */}
+
+    {/* User Interface */}
+    <rect class="axis-card ftp-model-card" x="70" y="44" width="160" height="50" rx="8"
+          fill="white" stroke="#dbe4ff" stroke-width="1"/>
+    <text class="axis-card-text" x="150" y="65" font-size="12" font-weight="600"
+          fill="#212529" text-anchor="middle">User Interface</text>
+    <text class="axis-card-sub" x="150" y="81" font-size="10"
+          fill="#868e96" text-anchor="middle">Human operator</text>
+
+    {/* User-PI */}
+    <rect class="axis-card ftp-model-card" x="70" y="130" width="160" height="50" rx="8"
+          fill="white" stroke="#bac8ff" stroke-width="1.5"/>
+    <text class="axis-card-text" x="150" y="151" font-size="12" font-weight="600"
+          fill="#212529" text-anchor="middle">User-PI</text>
+    <text class="axis-card-sub" x="150" y="167" font-size="10"
+          fill="#868e96" text-anchor="middle">Protocol Interpreter</text>
+
+    {/* User-DTP */}
+    <rect class="axis-card ftp-model-card" x="70" y="244" width="160" height="50" rx="8"
+          fill="white" stroke="#b2f2bb" stroke-width="1.5"/>
+    <text class="axis-card-text" x="150" y="265" font-size="12" font-weight="600"
+          fill="#212529" text-anchor="middle">User-DTP</text>
+    <text class="axis-card-sub" x="150" y="281" font-size="10"
+          fill="#868e96" text-anchor="middle">Data Transfer Process</text>
+
+    {/* ── Server side boxes ───────────────────── */}
+
+    {/* Server-PI */}
+    <rect class="axis-card ftp-model-card" x="490" y="130" width="160" height="50" rx="8"
+          fill="white" stroke="#bac8ff" stroke-width="1.5"/>
+    <text class="axis-card-text" x="570" y="151" font-size="12" font-weight="600"
+          fill="#212529" text-anchor="middle">Server-PI</text>
+    <text class="axis-card-sub" x="570" y="167" font-size="10"
+          fill="#868e96" text-anchor="middle">Protocol Interpreter</text>
+
+    {/* Server-DTP */}
+    <rect class="axis-card ftp-model-card" x="490" y="244" width="160" height="50" rx="8"
+          fill="white" stroke="#b2f2bb" stroke-width="1.5"/>
+    <text class="axis-card-text" x="570" y="265" font-size="12" font-weight="600"
+          fill="#212529" text-anchor="middle">Server-DTP</text>
+    <text class="axis-card-sub" x="570" y="281" font-size="10"
+          fill="#868e96" text-anchor="middle">Data Transfer Process</text>
+
+    {/* File System */}
+    <rect class="axis-card ftp-model-card" x="490" y="44" width="160" height="50" rx="8"
+          fill="white" stroke="#dbe4ff" stroke-width="1"/>
+    <text class="axis-card-text" x="570" y="65" font-size="12" font-weight="600"
+          fill="#212529" text-anchor="middle">File System</text>
+    <text class="axis-card-sub" x="570" y="81" font-size="10"
+          fill="#868e96" text-anchor="middle">Storage</text>
+
+    {/* ── Internal arrows (vertical, gray) ───── */}
+
+    {/* User Interface -> User-PI */}
+    <line class="ftp-model-internal" x1="150" y1="94" x2="150" y2="130"
+          stroke="#adb5bd" stroke-width="1" marker-end="url(#fm-arrow-gray)"/>
+
+    {/* User-PI -> User-DTP */}
+    <line class="ftp-model-internal" x1="150" y1="180" x2="150" y2="244"
+          stroke="#adb5bd" stroke-width="1" marker-end="url(#fm-arrow-gray)"/>
+
+    {/* Server-PI -> Server-DTP */}
+    <line class="ftp-model-internal" x1="570" y1="180" x2="570" y2="244"
+          stroke="#adb5bd" stroke-width="1" marker-end="url(#fm-arrow-gray)"/>
+
+    {/* Server-PI -> File System */}
+    <line class="ftp-model-internal" x1="570" y1="130" x2="570" y2="94"
+          stroke="#adb5bd" stroke-width="1" marker-end="url(#fm-arrow-gray)"/>
+
+    {/* ── Control connection (indigo, dashed) ── */}
+    <line class="ftp-model-control" x1="230" y1="155" x2="490" y2="155"
+          stroke="#4c6ef5" stroke-width="2" stroke-dasharray="8,4"
+          marker-end="url(#fm-arrow-indigo)"/>
+
+    {/* Control connection label */}
+    <rect class="ftp-model-label-bg" x="290" y="131" width="140" height="18" rx="4"
+          fill="#f0f4ff"/>
+    <text class="ftp-model-label" x="360" y="144" font-size="10" font-weight="600"
+          fill="#4c6ef5" text-anchor="middle">Control (port 21)</text>
+
+    {/* ── Data connection (green, solid) ──────── */}
+    <line class="ftp-model-data" x1="230" y1="269" x2="490" y2="269"
+          stroke="#37b24d" stroke-width="2"
+          marker-end="url(#fm-arrow-green)"/>
+
+    {/* Data connection label */}
+    <rect class="ftp-model-label-bg" x="295" y="245" width="130" height="18" rx="4"
+          fill="#f0fdf4"/>
+    <text class="ftp-model-label" x="360" y="258" font-size="10" font-weight="600"
+          fill="#37b24d" text-anchor="middle">Data (port 20)</text>
+
+    {/* ── Legend ──────────────────────────────── */}
+    <line x1="50" y1="322" x2="82" y2="322"
+          stroke="#4c6ef5" stroke-width="2" stroke-dasharray="8,4"/>
+    <text class="axis-card-sub" x="90" y="326" font-size="10" fill="#868e96">
+      Commands &amp; replies (persistent)</text>
+
+    <line x1="330" y1="322" x2="362" y2="322"
+          stroke="#37b24d" stroke-width="2"/>
+    <text class="axis-card-sub" x="370" y="326" font-size="10" fill="#868e96">
+      File data (opens per transfer)</text>
+  </svg>
+</div>
+
+<style>
+  /* Container */
+  .diagram-wrapper.ftp-model {
+    background-color: #fafbfc;
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .ftp-model-svg {
+    width: 100%;
+    display: block;
+  }
+
+  .ftp-model-svg text {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Dark mode: container */
+  :root[data-theme='dark'] .diagram-wrapper.ftp-model {
+    background-color: #1f2133;
+  }
+
+  /* Dark mode: group labels */
+  :root[data-theme='dark'] .ftp-model-group-label {
+    fill: #748ffc;
+  }
+
+  /* Dark mode: card strokes */
+  :root[data-theme='dark'] .ftp-model-card {
+    stroke: #2e3150 !important;
+  }
+
+  /* Dark mode: internal arrows */
+  :root[data-theme='dark'] .ftp-model-internal {
+    stroke: #6b6e82;
+    marker-end: url(#fm-arrow-gray-dark);
+  }
+
+  /* Dark mode: control connection */
+  :root[data-theme='dark'] .ftp-model-control {
+    stroke: #748ffc;
+  }
+
+  /* Dark mode: data connection */
+  :root[data-theme='dark'] .ftp-model-data {
+    stroke: #51cf66;
+  }
+
+  /* Dark mode: label backgrounds */
+  :root[data-theme='dark'] .ftp-model-label-bg {
+    fill: rgba(76, 110, 245, 0.12);
+  }
+
+  /* Dark mode: label text - control */
+  :root[data-theme='dark'] .ftp-model-label {
+    fill: #748ffc;
+  }
+
+  /* Dark mode: the green label bg specifically */
+  :root[data-theme='dark'] rect.ftp-model-label-bg[fill="#f0fdf4"] {
+    fill: rgba(55, 178, 77, 0.12);
+  }
+
+  /* Dark mode: green label text */
+  :root[data-theme='dark'] text.ftp-model-label[fill="#37b24d"] {
+    fill: #51cf66;
+  }
+</style>

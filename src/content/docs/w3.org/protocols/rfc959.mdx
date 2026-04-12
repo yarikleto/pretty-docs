@@ -1,6 +1,6 @@
 ---
-title: FTP Data Transfer
-description: How FTP moves files between computers — data types, structures, and transfer modes explained with diagrams.
+title: File Transfer Protocol (FTP)
+description: How FTP works — architecture, commands, reply codes, and data transfer explained from the complete RFC 959 specification.
 slug: w3.org/Protocols/rfc959
 prev: false
 next: false
@@ -14,22 +14,99 @@ import StructureCard from '../../../../components/article/StructureCard.astro';
 import ThreeDimensions from '../../../../components/diagrams/ThreeDimensions.astro';
 import BlockHeader from '../../../../components/diagrams/BlockHeader.astro';
 import FtpSession from '../../../../components/article/FtpSession.astro';
+import FtpModel from '../../../../components/diagrams/FtpModel.astro';
 
 <ArticleMeta
-  source="RFC 959, Section 3"
-  sourceUrl="https://www.w3.org/Protocols/rfc959/3_DataTransfer.html"
-  readingTime="12 min"
+  source="RFC 959"
+  sourceUrl="https://www.w3.org/Protocols/rfc959/"
+  readingTime="30 min"
 />
 
-The File Transfer Protocol (FTP) was designed in an era when computers disagreed about almost everything — how to represent text, how to organize files, even how many bits made up a byte. Its data transfer system had to bridge all of that. Rather than choosing one format and forcing everyone to use it, FTP lets the sender and receiver **negotiate** how data should be represented, structured, and transmitted.
+RFC 959 defines the **File Transfer Protocol** — the standard for transferring files between computers over TCP/IP. Published in October 1985 by Jon Postel and Joyce Reynolds, it consolidated fourteen years of protocol evolution dating back to the original RFC 114 in 1971. FTP's key innovation is using two separate TCP connections: one for commands, one for data. This article rewrites the complete specification into plain language with diagrams, tables, and source citations.
 
-This article covers Section 3 of RFC 959, which defines the three independent parameters that together describe any FTP data transfer. Think of them as three questions that must be answered before a single byte moves:
+## The FTP Model
+
+FTP is built on a simple but powerful idea: separate the **control channel** from the **data channel**. Commands and replies travel over a persistent TCP connection to port 21. File data travels over a separate TCP connection that opens and closes for each transfer. This separation means you can browse directories, change settings, and issue multiple transfer commands without ever interrupting a file transfer in progress.
+
+<FtpModel />
+<SourceRef section="2.3" quote="The communication path between the user-PI and server-PI is established as a TCP connection from the user to the standard server port." />
+
+The user side has three components. The **User Interface** is what the human interacts with — a command-line client, a GUI application, or a browser. The **User-PI** (Protocol Interpreter) handles the command/reply dialogue over the control connection. The **User-DTP** (Data Transfer Process) handles the actual file data on the data connection.
+
+The server side mirrors this structure. The **Server-PI** listens on port 21, parses commands, and sends replies. The **Server-DTP** manages data connections and interacts with the **File System** to read and write files.
+
+The control connection uses the Telnet protocol — commands and replies are NVT-ASCII text terminated by CRLF. The data connection carries file contents in whatever representation the two sides have agreed upon.
+
+FTP also supports a third-party transfer model. A user can establish control connections to two different servers and direct them to transfer data between each other directly. The user's PI sends a `PORT` command to one server and a `PASV` command to the other, then issues `STOR` to one and `RETR` to the other. The file data flows directly between the two servers without passing through the user's machine.
+
+<RfcToggle section="2.3" label="See original RFC text for the FTP model">
+{`   2.3.  THE FTP MODEL
+
+      With the above definitions in mind, the following model (shown in
+      Figure 1) may be used to describe the operation of FTP.
+
+                                            -------------
+                                            |/---------\|
+                                            ||   User  ||    --------
+                                            ||Interface|<--->| User |
+                                            |\----^----/|    --------
+                  ----------                |     |     |
+                  |/------\|  FTP Commands  |/----V----\|
+                  ||Server|<--------------->||  User   ||
+                  ||  PI  ||   FTP Replies  ||    PI   ||
+                  |\--^---/|                |\----^----/|
+                  |   |    |                |     |     |
+      --------    |/--V---\|      Data      |/----V----\|    --------
+      | File |<--->|Server|<--------------->||  User   |<--->| File |
+      |System|    || DTP  ||   Connection   ||   DTP   ||    |System|
+      --------    |\------/|                |\---------/|    --------
+                  ----------                -------------
+
+                  Server-FTP                   USER-FTP
+
+      NOTES: 1. The data connection may be used in either direction.
+             2. The data connection need not exist all of the time.`}
+</RfcToggle>
+
+<SourceRef section="2.3" quote="In the model described above, the user-protocol interpreter initiates the control connection. The control connection follows the Telnet protocol." />
+
+## Access Control
+
+Before any file operations, the user must identify themselves. FTP defines a login sequence and several commands for navigating the server's file system.
+
+### Login Sequence
+
+The login sequence uses up to three commands: `USER`, `PASS`, and optionally `ACCT`.
+
+**`USER`** identifies the user to the server. It is normally the first command sent after the control connection is established. The server may respond with 230 (logged in, no password needed), 331 (password required), or 332 (account required).
+
+**`PASS`** sends the user's password and must immediately follow `USER`. The RFC places responsibility for hiding the password display on the user-side software — the server never echoes it back. The server responds with 230 (logged in), 202 (not needed), or 332 (account needed for login).
+
+**`ACCT`** provides accounting information. It is not necessarily related to the `USER` command — some systems use it to grant access to specific resources rather than for authentication. A server may require `ACCT` at login time (indicated by a 332 reply to `USER` or `PASS`) or later when a specific operation needs it (indicated by a 332 reply to a service command like `STOR`).
+
+<SourceRef section="4.1.1" quote="The following commands specify access control identifiers (command codes are shown in parentheses)." />
+
+### Navigation and Session Commands
+
+**`CWD`** (Change Working Directory) changes the server's current directory for the user. The argument is a directory pathname. **`CDUP`** changes to the parent directory — it exists as a convenience because different systems represent the parent directory differently (`..` on Unix, `-` on some others).
+
+**`REIN`** (Reinitialize) resets the session to the state right after the control connection was opened. All user credentials are flushed, any transfer in progress is allowed to complete, and the parameters (TYPE, STRU, MODE) revert to defaults. The control connection stays open — the user can log in again with a new `USER` command.
+
+**`QUIT`** terminates the session and closes the control connection. If a file transfer is in progress, the server waits for it to complete before responding with 221 and closing. The user side should read the server's reply before closing its end of the control connection.
+
+**`SMNT`** (Structure Mount) allows the user to mount a different file system data structure on the server. This command is system-specific and rarely implemented.
+
+<SourceRef section="4.1.1" />
+
+## Data Transfer Parameters
+
+Before a single byte of file data moves, both sides must agree on three independent parameters: the **data type** (how bytes are interpreted), the **data structure** (how bytes are organized), and the **transfer mode** (how bytes are shipped). Think of them as three questions that must be answered before a transfer begins:
 
 1. **What language are we speaking?** (Data Type)
 2. **How is the content organized?** (Data Structure)
 3. **How do we ship it?** (Transfer Mode)
 
-## The Three Dimensions of a Transfer
+### The Three Dimensions of a Transfer
 
 Every FTP transfer is defined by three independent choices, set with the `TYPE`, `STRU`, and `MODE` commands before the transfer begins. Each choice is orthogonal — changing the data type does not constrain which structure or mode you can use.
 
@@ -38,36 +115,20 @@ Every FTP transfer is defined by three independent choices, set with the `TYPE`,
 
 The defaults — ASCII type, File structure, Stream mode — work for simple text transfers between similar systems. But transferring a compiled executable from a mainframe to a Unix workstation? You would need to change at least the type (to Image) and possibly the structure (to Record) to avoid mangling the data.
 
-## Data Types
+### Data Types
 
 Think of data types as **languages** — the sender and receiver need to agree on which one they are speaking. If the sender transmits a file as ASCII text but the receiver tries to interpret it as raw binary, the result is garbled data. The `TYPE` command sets this agreement before any transfer begins.
 
-### ASCII Type
+**ASCII** is the default data type, and the one you will encounter most often with text files. When a file is transferred in ASCII mode, FTP performs a crucial translation: the sender converts its native line endings to a canonical format (CRLF — carriage return followed by line feed), and the receiver converts CRLF back to whatever its operating system expects. This matters because operating systems disagree about line endings. Unix uses a single line feed (LF). Classic Mac OS used a carriage return (CR). Windows uses both (CRLF). Without this normalization, a text file transferred from Unix to Windows would appear as one enormous line. ASCII type also supports an optional second parameter for vertical format control — Non-print (default), Telnet, and ASA (Fortran carriage control).
 
-**ASCII** is the default data type, and the one you will encounter most often with text files. When a file is transferred in ASCII mode, FTP performs a crucial translation: the sender converts its native line endings to a canonical format (CRLF — carriage return followed by line feed), and the receiver converts CRLF back to whatever its operating system expects.
+**EBCDIC** is the ASCII type's counterpart for IBM mainframe systems. It uses the EBCDIC character set as the transfer representation instead of ASCII. Like ASCII, it supports the same vertical format control sub-options. Unless you are transferring files to or from an IBM mainframe, you will never encounter this type.
 
-This matters because operating systems disagree about line endings. Unix uses a single line feed (LF). Classic Mac OS used a carriage return (CR). Windows uses both (CRLF). Without this normalization, a text file transferred from Unix to Windows would appear as one enormous line.
+**Image type** — commonly called **binary mode** — transfers data byte-for-byte with no conversion whatsoever. The file is treated as a continuous stream of bits, packed into 8-bit bytes for transfer, and stored without any transformation at the receiving end. This is the type you want for anything that is not plain text: images, executables, compressed archives, PDFs, database files. Any byte-level modification during transfer would corrupt these files.
 
-ASCII type also supports an optional **second parameter** for vertical format control — how form feeds, vertical tabs, and other formatting characters should be interpreted. In practice, the two sub-options (Non-print and Telnet) are rarely specified; Non-print is the default and simply means "no special formatting."
+**Local type** exists for systems where the fundamental storage unit is not an 8-bit byte. The sender specifies a byte size (the number of bits per logical byte on the local system), and data is transferred using that byte size. On modern systems (which universally use 8-bit bytes), Local type with a byte size of 8 is functionally identical to Image type.
 
-### EBCDIC Type
-
-**EBCDIC** is the ASCII type's counterpart for IBM mainframe systems. Where ASCII type uses the ASCII character set as the transfer representation, EBCDIC type uses the EBCDIC character set. It serves the same purpose — text transfer with line-ending normalization — but for environments where EBCDIC is the native encoding.
-
-Like ASCII, EBCDIC supports the same vertical format control sub-options. Unless you are transferring files to or from an IBM mainframe, you will never encounter this type.
-
-### Image Type (Binary)
-
-**Image type** — commonly called **binary mode** — transfers data byte-for-byte with no conversion whatsoever. The file is treated as a continuous stream of bits, packed into 8-bit bytes for transfer, and stored without any transformation at the receiving end.
-
-This is the type you want for anything that is not plain text: images, executables, compressed archives, PDFs, database files. Any byte-level modification during transfer would corrupt these files. A JPEG image has no "line endings" to normalize — every byte is meaningful data.
-
-### Local Type
-
-**Local type** exists for systems where the fundamental storage unit is not an 8-bit byte. The sender specifies a **byte size** (the number of bits per logical byte on the local system), and data is transferred using that byte size. This accommodated machines with 36-bit words or other non-octet architectures. On modern systems (which universally use 8-bit bytes), Local type with a byte size of 8 is functionally identical to Image type.
-
-:::note[Why this matters]
-The single most common FTP mistake is transferring a binary file in ASCII mode. Because ASCII mode rewrites bytes that happen to match line-ending characters (CR, LF), a binary file transferred as ASCII arrives corrupted — images display with artifacts, executables crash, archives fail to decompress. Most modern FTP clients default to binary mode precisely to avoid this. If you ever see a transferred file that is "almost right" but slightly broken, check the transfer type first.
+:::note[The most common FTP mistake]
+Transferring a binary file in ASCII mode. Because ASCII mode rewrites bytes that happen to match line-ending characters (CR, LF), a binary file transferred as ASCII arrives corrupted — images display with artifacts, executables crash, archives fail to decompress. Most modern FTP clients default to binary mode precisely to avoid this.
 :::
 
 <RfcToggle section="3.1.1" label="See original RFC text for Data Types">
@@ -121,55 +182,45 @@ The single most common FTP mistake is transferring a binary file in ASCII mode. 
 
 <SourceRef section="3.1.1" quote="The data types defined in FTP are described below, along with their definitions." />
 
-## Data Structures
+### Data Structures
 
-Data types define how to **interpret** bytes. Data structures define how to **organize** them. Think of it this way: the type tells you whether the bytes represent text or binary data, while the structure tells you whether those bytes form one continuous stream, a sequence of records, or a set of indexed pages.
-
-The `STRU` command sets the structure before a transfer. Most modern transfers use File structure (the default), but understanding all three helps explain why certain FTP features exist.
+Data types define how to **interpret** bytes. Data structures define how to **organize** them. The type tells you whether the bytes represent text or binary data; the structure tells you whether those bytes form one continuous stream, a sequence of records, or a set of indexed pages. The `STRU` command sets the structure before a transfer.
 
 <StructureCard
   letter="F"
   title="File Structure"
-  description="The file is a continuous sequence of bytes with no internal boundaries. This is the default and maps directly to how modern operating systems store files — as flat byte streams. Virtually all FTP transfers today use File structure. When in doubt, this is what you want."
+  description="The file is a continuous sequence of bytes with no internal boundaries. This is the default and maps directly to how modern operating systems store files — as flat byte streams. Virtually all FTP transfers today use File structure."
 />
 
 <StructureCard
   letter="R"
   title="Record Structure"
-  description="The file is divided into sequential records, each with explicit boundaries. This structure exists because some systems — particularly IBM mainframes and other record-oriented operating systems — store files as sequences of fixed-length or variable-length records, not as flat byte streams. FTP preserves these record boundaries during transfer so the receiving system can reconstruct the original record layout."
+  description="The file is divided into sequential records, each with explicit boundaries. This structure exists because some systems — particularly IBM mainframes — store files as sequences of fixed-length or variable-length records, not as flat byte streams. FTP preserves these record boundaries during transfer so the receiving system can reconstruct the original layout."
 />
 
 <StructureCard
   letter="P"
   title="Page Structure"
-  description="The file is a set of independent, indexed pages (also called access units). Each page is transmitted with a header containing its page number, data length, and a page type descriptor. This was designed for systems that store files as non-contiguous pages in memory — think of virtual memory paging or random-access file systems. Page structure is the only structure that allows random access to parts of a file during transfer. It is rarely used in practice."
+  description="The file is a set of independent, indexed pages (also called access units). Each page is transmitted with a header containing its page number, data length, and a page type descriptor. This was designed for systems that store files as non-contiguous pages — think of virtual memory paging or random-access file systems. Page structure is the only structure that allows random access during transfer. It is rarely used in practice."
 />
 
 <SourceRef section="3.1.2" quote="In addition to different representation types, FTP allows the structure of a file to be specified." />
 
-The key insight is that **structure and type are independent**. You can transfer ASCII text in Record structure (common on mainframes that store text files as records) or Image data in File structure (the typical modern case). The three structure options exist not because FTP was over-designed, but because the protocol had to accommodate fundamentally different ideas about what a "file" is.
+The key insight is that **structure and type are independent**. You can transfer ASCII text in Record structure (common on mainframes that store text files as records) or Image data in File structure (the typical modern case). The three options exist not because FTP was over-designed, but because the protocol had to accommodate fundamentally different ideas about what a "file" is.
 
-## Transfer Modes
+### Transfer Modes
 
-Transfer modes answer the final question: **how do we ship the data?** The data type says what the bytes mean, the structure says how they are organized, and the mode says how they are packaged for transmission over the data connection. The `MODE` command selects one of three options before a transfer begins.
+Transfer modes answer the final question: **how do we ship the data?** The data type says what the bytes mean, the structure says how they are organized, and the mode says how they are packaged for transmission over the data connection. The `MODE` command selects one of three options.
 
-### Stream Mode
-
-**Stream mode** is the default and by far the most common. Data is transmitted as a plain stream of bytes with no framing added by FTP itself. The end of a file is signaled by the sender closing the data connection — simple and efficient.
-
-For File structure, closing the connection is all that is needed to mark the end. For Record structure, a two-byte control code (0xFF followed by a descriptor byte) is inserted into the stream to mark end-of-record (EOR) and end-of-file (EOF) boundaries. If the actual data contains 0xFF, it is escaped by sending 0xFF twice.
-
-Stream mode is efficient because it adds **zero overhead** for the most common case (File structure transfers). There are no headers, no block boundaries, no compression — just raw data flowing from sender to receiver. The downside is that if the connection drops mid-transfer, there is no way to know how much data was lost or to resume from where it left off.
+**Stream mode** is the default and by far the most common. Data is transmitted as a plain stream of bytes with no framing added by FTP itself. The end of a file is signaled by the sender closing the data connection. For Record structure, a two-byte control code (0xFF followed by a descriptor byte) is inserted to mark end-of-record (EOR) and end-of-file (EOF) boundaries. Stream mode adds **zero overhead** for File structure transfers — just raw data flowing from sender to receiver. The downside is that if the connection drops mid-transfer, there is no way to resume from where it left off.
 
 <SourceRef section="3.4.1" quote="The data is transmitted as a stream of bytes." />
 
-### Block Mode
-
-**Block mode** wraps the data in a series of blocks, each preceded by a three-byte header. This header tells the receiver exactly how many data bytes follow and provides flags that describe the block's role in the transfer.
+**Block mode** wraps the data in a series of blocks, each preceded by a three-byte header containing a descriptor byte and a 16-bit byte count.
 
 <BlockHeader />
 
-The **descriptor byte** uses individual bits as flags:
+The descriptor byte uses individual bits as flags:
 
 | Bit Value | Flag | Meaning |
 |-----------|------|---------|
@@ -178,11 +229,11 @@ The **descriptor byte** uses individual bits as flags:
 | 32 (0x20) | Errors | Suspected errors in the data (the block may be unreliable) |
 | 16 (0x10) | Restart | This block contains a restart marker, not file data |
 
-:::caution[Important]
+:::caution
 These values are **bit flags**, not mutually exclusive enums. They combine by addition (or bitwise OR). A descriptor value of **192** means both EOR and EOF are set (128 + 64) — the block is simultaneously the last in its record and the last in the file. The remaining bits (8, 4, 2, 1) are reserved and should be zero.
 :::
 
-The **byte count** (16 bits) gives the exact number of data bytes following the header, allowing the receiver to find the next block header without scanning the data. This makes block mode **restartable** — if a transfer fails, the restart marker flag lets the sender insert checkpoint information that both sides can use to resume from a known point rather than starting over.
+The byte count gives the exact number of data bytes following the header, allowing the receiver to find the next block header without scanning the data. This makes block mode **restartable** — the restart marker flag lets the sender insert checkpoint information for resuming failed transfers.
 
 <SourceRef section="3.4.2" quote="The block header consists of the count field, and descriptor code." />
 
@@ -233,63 +284,373 @@ The **byte count** (16 bits) gives the exact number of data bytes following the 
          connection (e.g., default--NVT-ASCII).`}
 </RfcToggle>
 
-### Compressed Mode
-
-**Compressed mode** applies a simple run-length encoding scheme to reduce the amount of data transmitted. It is defined in the RFC but rarely used in practice — modern file compression (gzip, zlib) is far more effective and is typically applied before transfer, not during it.
-
-The compression scheme encodes data bytes into three types of output:
-
-1. **Regular data** — a byte with bit 7 clear and bits 6-0 giving a count (1-127), followed by that many data bytes transmitted verbatim. This is used for sequences of non-repeating data.
-2. **Replicated data** — a byte with bit 7 set and bit 6 clear, where bits 5-0 give the repeat count, followed by a single data byte to be replicated that many times. This compresses runs of identical bytes (e.g., long strings of spaces or null bytes).
-3. **Filler bytes** — a byte with bits 7 and 6 both set, where bits 5-0 give a count of filler bytes to insert. The filler character depends on the data type (zero for Image, space for ASCII/EBCDIC).
-
-Like block mode, compressed mode uses a two-byte control sequence to mark EOR and EOF boundaries within the stream.
+**Compressed mode** applies a simple run-length encoding scheme to reduce the amount of data transmitted. It encodes data into three types of output: **regular data** (a count byte followed by that many verbatim bytes), **replicated data** (a count followed by a single byte to repeat), and **filler bytes** (a count of padding characters to insert). Like block mode, compressed mode uses control sequences to mark EOR and EOF boundaries. In practice, compressed mode is rarely used — modern file compression (gzip, zlib) applied before transfer is far more effective.
 
 <SourceRef section="3.4.3" quote="There are three kinds of information to be sent: regular data, in a byte string; compressed data, consisting of replications or filler; and control information." />
 
-## Example Session
+## FTP Commands
 
-Putting it all together — here is what a typical FTP data transfer looks like on the wire. The client connects, authenticates, sets the transfer type to binary (Image), enters passive mode, and retrieves a file.
+FTP defines 33 commands, sent as ASCII text over the control connection. Each command is three or four uppercase characters, optionally followed by a space and an argument, terminated by CRLF. The RFC groups them into three categories: access control, transfer parameters, and service commands.
+
+### Access Control Commands
+
+These eight commands handle authentication and session management. The login sequence and navigation commands are covered in the [Access Control section above](#access-control).
+
+| Command | Full Name | Purpose |
+|---------|-----------|---------|
+| `USER` | Username | Identify the user |
+| `PASS` | Password | Send the user's password |
+| `ACCT` | Account | Provide accounting information |
+| `CWD` | Change Working Directory | Navigate to a directory |
+| `CDUP` | Change to Parent Directory | Go up one directory level |
+| `SMNT` | Structure Mount | Mount a file system structure |
+| `REIN` | Reinitialize | Reset session, keep connection |
+| `QUIT` | Logout | End session and close connection |
+
+<SourceRef section="4.1.1" />
+
+### Transfer Parameter Commands
+
+Five commands configure how data connections are established and how file data is represented on the wire. These must be set **before** issuing a transfer command.
+
+| Command | Full Name | Argument | Default |
+|---------|-----------|----------|---------|
+| `PORT` | Data Port | h1,h2,h3,h4,p1,p2 | User's control connection port |
+| `PASV` | Passive | (none — server replies with address) | N/A |
+| `TYPE` | Representation Type | A [N\|T\|C], E [N\|T\|C], I, L byte-size | A N |
+| `STRU` | File Structure | F, R, P | F |
+| `MODE` | Transfer Mode | S, B, C | S |
+
+<SourceRef section="4.1.2" quote="All data transfer parameters have default values, and the commands specifying data transfer parameters are required only if the default parameter values are to be changed." />
+
+**`PORT`** tells the server where to connect for data transfers. The argument contains six comma-separated decimal numbers: four for the IP address and two for the port (port = p1 x 256 + p2). This is **active mode** — the client opens a port and waits; the server initiates the data connection to that address. Active mode was the original design, where the client says "connect to me here" and the server reaches out.
+
+**`PASV`** reverses the direction. Instead of the client opening a port for the server, the server opens a port and reports its address in the reply (format: `227 Entering Passive Mode (h1,h2,h3,h4,p1,p2)`). The client then initiates the data connection to that address. **Passive mode** exists because active mode fails when the client is behind a firewall or NAT — the server cannot reach the client's port. In passive mode, the client initiates both connections (control and data), which works through most firewalls.
+
+<SourceRef section="3.2" />
+
+### Service Commands
+
+These twenty commands perform the actual work of transferring files, managing directories, and querying the server.
+
+**File transfer commands:**
+
+| Command | Full Name | Purpose |
+|---------|-----------|---------|
+| `RETR` | Retrieve | Download a file from the server |
+| `STOR` | Store | Upload a file to the server |
+| `STOU` | Store Unique | Upload with a unique filename (server picks the name) |
+| `APPE` | Append | Upload and append to an existing file |
+| `ALLO` | Allocate | Reserve storage space before a transfer |
+| `REST` | Restart | Set the restart point for the next transfer |
+| `ABOR` | Abort | Cancel a transfer in progress |
+
+`RETR` and `STOR` are the core file transfer pair. `RETR` tells the server to send the specified file over the data connection. `STOR` tells the server to accept data and store it as the specified file, overwriting any existing file with that name. `STOU` is like `STOR` but the server generates a unique filename and reports it in the 250 reply — useful for avoiding accidental overwrites.
+
+**File management commands:**
+
+| Command | Full Name | Purpose |
+|---------|-----------|---------|
+| `RNFR` | Rename From | Specify the file to rename (must be followed by RNTO) |
+| `RNTO` | Rename To | Specify the new filename |
+| `DELE` | Delete | Delete a file |
+| `RMD` | Remove Directory | Delete a directory |
+| `MKD` | Make Directory | Create a directory |
+| `PWD` | Print Working Directory | Show current directory path |
+| `LIST` | List | Send a detailed directory listing over the data connection |
+| `NLST` | Name List | Send a filename-only directory listing over the data connection |
+
+Renaming is a two-command sequence: `RNFR` specifies which file to rename, and `RNTO` (which must immediately follow) specifies the new name. If any other command is sent between `RNFR` and `RNTO`, the rename is abandoned.
+
+**Informational commands:**
+
+| Command | Full Name | Purpose |
+|---------|-----------|---------|
+| `SITE` | Site Parameters | Send site-specific commands |
+| `SYST` | System | Report the server's operating system type |
+| `STAT` | Status | Report server status or transfer status |
+| `HELP` | Help | List available commands or explain a specific command |
+| `NOOP` | No Operation | Do nothing (used as a keep-alive) |
+
+<SourceRef section="4.1.3" />
+
+## Reply Codes
+
+Every FTP command receives a reply: a three-digit numeric code, followed by a space, followed by a human-readable text message, terminated by CRLF. The number is for automata; the text is for humans.
+
+### Reply Structure
+
+The three digits encode two levels of meaning. The **first digit** indicates the overall status of the command. The **second digit** groups replies by function. The third digit provides finer granularity within each group.
+
+**First digit — response category:**
+
+| Digit | Category | Meaning |
+|-------|----------|---------|
+| 1yz | Positive Preliminary | Action started, expect another reply before sending a new command |
+| 2yz | Positive Completion | Action completed successfully |
+| 3yz | Positive Intermediate | Command accepted, but need more information (e.g., PASS after USER) |
+| 4yz | Transient Negative | Action failed, but retry might work |
+| 5yz | Permanent Negative | Action failed, do not retry without changing something |
+
+**Second digit — function grouping:**
+
+| Digit | Group | Covers |
+|-------|-------|--------|
+| x0z | Syntax | Syntax errors, unrecognized commands |
+| x1z | Information | Replies to informational requests (STAT, HELP) |
+| x2z | Connections | Control and data connection status |
+| x3z | Authentication | Login and account replies |
+| x5z | File system | File and directory operations |
+
+<SourceRef section="4.2" quote="An FTP reply consists of a three digit number (transmitted as three alphanumeric characters) followed by some text." />
+
+The practical rule for client implementers: **4yz means retry might work** (the server is busy, a resource is temporarily unavailable). **5yz means do not retry** without changing something — the command has a syntax error, the file does not exist, or the user does not have permission.
+
+### Multi-line Replies
+
+When a reply needs more than one line (common with `STAT` and `HELP`), the first line uses a hyphen instead of a space after the code (e.g., `211-System status:`), and the last line uses a space after the same code (e.g., `211 End of status`). The client reads lines until it finds one that starts with the original three-digit code followed by a space.
+
+<SourceRef section="4.2" />
+
+### Complete Reply Code Reference
+
+| Code | Meaning |
+|------|---------|
+| 110 | Restart marker reply |
+| 120 | Service ready in *nnn* minutes |
+| 125 | Data connection already open; transfer starting |
+| 150 | About to open data connection |
+| 200 | Command OK |
+| 202 | Command not implemented; superfluous at this site |
+| 211 | System status, or system help reply |
+| 212 | Directory status |
+| 213 | File status |
+| 214 | Help message |
+| 215 | NAME system type |
+| 220 | Service ready for new user |
+| 221 | Service closing control connection (goodbye) |
+| 225 | Data connection open; no transfer in progress |
+| 226 | Closing data connection; requested file action successful |
+| 227 | Entering Passive Mode (h1,h2,h3,h4,p1,p2) |
+| 230 | User logged in, proceed |
+| 250 | Requested file action OK, completed |
+| 257 | "PATHNAME" created |
+| 331 | User name OK, need password |
+| 332 | Need account for login |
+| 350 | Requested file action pending further information |
+| 421 | Service not available, closing control connection |
+| 425 | Can't open data connection |
+| 426 | Connection closed; transfer aborted |
+| 450 | Requested file action not taken (file unavailable, busy) |
+| 451 | Requested action aborted: local error in processing |
+| 452 | Requested action not taken: insufficient storage space |
+| 500 | Syntax error, command unrecognized |
+| 501 | Syntax error in parameters or arguments |
+| 502 | Command not implemented |
+| 503 | Bad sequence of commands |
+| 504 | Command not implemented for that parameter |
+| 530 | Not logged in |
+| 532 | Need account for storing files |
+| 550 | Requested action not taken (file unavailable, not found, no access) |
+| 551 | Requested action aborted: page type unknown |
+| 552 | Requested file action aborted: exceeded storage allocation |
+| 553 | Requested action not taken: file name not allowed |
+
+<SourceRef section="4.2.2" quote="The third digit gives a finer gradation of meaning in each of the function categories, specified by the second digit." />
+
+<RfcToggle section="4.2" label="See original RFC text for reply structure">
+{`   4.2.  FTP REPLIES
+
+      Replies to File Transfer Protocol commands are devised to ensure
+      the synchronization of requests and actions in the process of file
+      transfer, and to guarantee that the user process always knows the
+      state of the Server.  Every command must generate at least one
+      reply, although there may be more than one; in the latter case,
+      the multiple replies must be easily distinguished.  In addition,
+      some commands occur in sequential groups, such as USER, PASS and
+      ACCT, or RNFR and RNTO.  The replies show the existence of an
+      intermediate state if all preceding commands have been successful.
+      A failure at any point in the sequence necessitates the repetition
+      of the entire sequence from the beginning.
+
+         An FTP reply consists of a three digit number (transmitted as
+         three alphanumeric characters) followed by some text.  The
+         number is intended for use by automata to determine what state
+         to enter next; the text is intended for the human user.
+
+      The three digits of the reply each have a special significance.
+      The first digit denotes whether the response is good, bad or
+      incomplete.  The second digit is a function grouping.  The third
+      digit gives a finer gradation of meaning in each of the function
+      categories, specified by the second digit.`}
+</RfcToggle>
+
+## Connection Management
+
+FTP's two-connection architecture requires careful coordination. The control connection is straightforward — a single persistent TCP connection. The data connection is more complex.
+
+### Establishing the Data Connection
+
+In **active mode** (the original design), the server initiates the data connection from its port 20 to the client's address and port specified by the `PORT` command. The sequence is: client sends `PORT` with its address, then a transfer command (`RETR`, `STOR`, `LIST`); the server connects back to the client.
+
+In **passive mode**, the client sends `PASV`, the server opens a listening port and replies with its address, and the client connects to that port. The client then sends the transfer command to begin the data flow.
+
+:::note[Why passive mode dominates today]
+Active mode requires the server to initiate a TCP connection to the client. This fails when the client is behind a NAT router or firewall that blocks incoming connections — the norm for virtually all home and office networks since the late 1990s. Passive mode solves this by having the client initiate both connections, which works through standard firewall configurations. Nearly all modern FTP clients use passive mode by default.
+:::
+
+<SourceRef section="3.2" quote="The mechanics of transferring data consists of setting up the data connection to the appropriate ports and choosing the parameters for transfer." />
+
+### Closing the Data Connection
+
+The RFC specifies five conditions under which the server must close the data connection:
+
+1. The server has sent all the data in **stream mode** (the connection close signals EOF).
+2. The server has sent an **EOF indicator** in block or compressed mode.
+3. The client sends an `ABOR` command.
+4. The server receives a new transfer parameter command (`PORT`, `PASV`, `TYPE`, `STRU`, `MODE`) while a data connection is open but idle.
+5. The control connection is closed (abnormally or by `QUIT`).
+
+Stream mode's reliance on connection close to signal EOF creates a limitation: the server cannot reuse the data connection for multiple transfers. A new data connection must be created for each file. Block and compressed modes use in-band EOF markers, which could in principle allow connection reuse, though in practice most implementations create a new connection per transfer regardless.
+
+<SourceRef section="3.3" quote="The data connection shall be closed by the server under the conditions described above." />
+
+### Port Assignment
+
+The default data port is the same as the control connection port on the user side. However, using the same port for multiple connections causes problems with TCP's TIME_WAIT state — after a connection closes, TCP reserves the port for a timeout period to handle delayed packets. The `PORT` command lets the user specify a different port for each data connection, avoiding this issue. Implementations that use `PORT` to select non-default data ports can issue transfers in rapid succession without waiting for TCP timeouts.
+
+<SourceRef section="5.2" />
+
+## Error Recovery and Restart
+
+FTP provides a mechanism for resuming interrupted file transfers, but only in **block** and **compressed** modes — not in stream mode, because stream mode has no way to mark positions within the data.
+
+The restart mechanism works as follows:
+
+1. During a transfer, the sender periodically inserts **restart markers** into the data stream. In block mode, this is a block with the restart bit flag set (descriptor = 16). The marker data is a sequence of printable ASCII characters that both sides can use to identify a position in the file.
+
+2. The receiver acknowledges each marker in a 110 reply over the control connection: `110 MARK ssss = rrrr`, where `ssss` is the sender's marker and `rrrr` is the receiver's corresponding position.
+
+3. If the transfer fails, the user can resume by sending a `REST` command with the receiver's marker (`rrrr`), followed by the same `RETR` or `STOR` command. The transfer picks up from the marked position.
+
+The marker information is defined as printable characters in the language used on the control connection (NVT-ASCII by default). The exact meaning of the markers is system-dependent — they could be byte offsets, record numbers, or any other position identifier that makes sense to the respective file systems.
+
+:::note
+TCP already handles bit-level error detection and retransmission. FTP's restart mechanism operates at a higher level — it handles the case where the entire TCP connection drops (network outage, server crash) and the transfer must resume from a checkpoint rather than starting over.
+:::
+
+<SourceRef section="3.5" quote="There is no provision for detecting bits lost or scrambled in data transfer; this level of error control is handled by the TCP." />
+
+## A Complete Session
+
+Putting it all together — here is a typical FTP session showing the full command/reply dialogue on the control connection.
 
 <FtpSession title="FTP Session" context="Control connection (port 21)">
-<span class="syn-comment"># Client connects to FTP server</span>
-<span class="syn-response">220 ftp.example.com FTP server ready</span>
+<span class="syn-comment"># Client connects to FTP server</span>{'\n'}
+<span class="syn-response">220 ftp.example.com FTP server ready</span>{'\n'}
+{'\n'}
+<span class="syn-comment"># Authentication</span>{'\n'}
+<span class="syn-command">USER</span>{' '}<span class="syn-string">alice</span>{'\n'}
+<span class="syn-response">331 Password required for alice</span>{'\n'}
+{'\n'}
+<span class="syn-command">PASS</span>{' '}<span class="syn-string">********</span>{'\n'}
+<span class="syn-response">230 User alice logged in</span>{'\n'}
+{'\n'}
+<span class="syn-comment"># Check current directory</span>{'\n'}
+<span class="syn-command">PWD</span>{'\n'}
+<span class="syn-response">257 "/home/alice" is current directory</span>{'\n'}
+{'\n'}
+<span class="syn-comment"># Navigate to the project directory</span>{'\n'}
+<span class="syn-command">CWD</span>{' '}<span class="syn-string">projects/reports</span>{'\n'}
+<span class="syn-response">250 CWD command successful</span>{'\n'}
+{'\n'}
+<span class="syn-comment"># Set transfer type to Image (binary) -- no byte conversion</span>{'\n'}
+<span class="syn-command">TYPE</span>{' '}<span class="syn-string">I</span>{'\n'}
+<span class="syn-response">200 Type set to I</span>{'\n'}
+{'\n'}
+<span class="syn-comment"># Request passive mode -- server provides address for data connection</span>{'\n'}
+<span class="syn-command">PASV</span>{'\n'}
+<span class="syn-response">227 Entering Passive Mode (<span class="syn-number">192,168,1,10,195,149</span>)</span>{'\n'}
+{'\n'}
+<span class="syn-comment"># Request directory listing (data flows over separate connection)</span>{'\n'}
+<span class="syn-command">LIST</span>{'\n'}
+<span class="syn-response">150 Opening ASCII mode data connection for file list</span>{'\n'}
+<span class="syn-response">226 Transfer complete</span>{'\n'}
+{'\n'}
+<span class="syn-comment"># New PASV for the file transfer</span>{'\n'}
+<span class="syn-command">PASV</span>{'\n'}
+<span class="syn-response">227 Entering Passive Mode (<span class="syn-number">192,168,1,10,195,150</span>)</span>{'\n'}
+{'\n'}
+<span class="syn-comment"># Download a file</span>{'\n'}
+<span class="syn-command">RETR</span>{' '}<span class="syn-string">report-2026.pdf</span>{'\n'}
+<span class="syn-response">150 Opening BINARY mode data connection for report-2026.pdf (<span class="syn-number">2458624</span> bytes)</span>{'\n'}
+<span class="syn-response">226 Transfer complete</span>{'\n'}
+{'\n'}
+<span class="syn-comment"># Done</span>{'\n'}
+<span class="syn-command">QUIT</span>{'\n'}
+<span class="syn-response">221 Goodbye</span>
+</FtpSession>
 
-<span class="syn-command">USER</span> <span class="syn-string">alice</span>
-<span class="syn-response">331 Password required for alice</span>
+The RFC includes its own example scenario in Section 7, showing how a user-level interface translates human commands into wire-level FTP commands. Here is an adapted version of that scenario:
 
-<span class="syn-command">PASS</span> <span class="syn-string">••••••••</span>
-<span class="syn-response">230 User alice logged in</span>
-
-<span class="syn-comment"># Set transfer type to Image (binary) — no byte conversion</span>
-<span class="syn-command">TYPE</span> <span class="syn-string">I</span>
-<span class="syn-response">200 Type set to I</span>
-
-<span class="syn-comment"># Request passive mode — server provides address for data connection</span>
-<span class="syn-command">PASV</span>
-<span class="syn-response">227 Entering Passive Mode (<span class="syn-number">192,168,1,10,195,149</span>)</span>
-
-<span class="syn-comment"># Client opens data connection to 192.168.1.10 port 50069 (195×256+149)</span>
-<span class="syn-comment"># Then requests the file</span>
-<span class="syn-command">RETR</span> <span class="syn-string">report-2026.pdf</span>
-<span class="syn-response">150 Opening BINARY mode data connection for report-2026.pdf (<span class="syn-number">2458624</span> bytes)</span>
-
-<span class="syn-comment"># File data flows over the data connection...</span>
-<span class="syn-response">226 Transfer complete</span>
-
-<span class="syn-command">QUIT</span>
+<FtpSession title="RFC 959 Section 7 Example" context="User commands and FTP commands">
+<span class="syn-comment"># User types a command in their FTP client (left)</span>{'\n'}
+<span class="syn-comment"># Corresponding FTP protocol messages on the wire (right)</span>{'\n'}
+{'\n'}
+<span class="syn-keyword">ftp> </span><span class="syn-string">open ftp.example.com</span>{'\n'}
+<span class="syn-response">220 FTP server ready</span>{'\n'}
+{'\n'}
+<span class="syn-keyword">ftp> </span><span class="syn-string">login alice</span>{'\n'}
+<span class="syn-command">USER</span>{' '}<span class="syn-string">alice</span>{'\n'}
+<span class="syn-response">331 Password required</span>{'\n'}
+<span class="syn-command">PASS</span>{' '}<span class="syn-string">********</span>{'\n'}
+<span class="syn-response">230 User alice logged in</span>{'\n'}
+{'\n'}
+<span class="syn-keyword">ftp> </span><span class="syn-string">type binary</span>{'\n'}
+<span class="syn-command">TYPE</span>{' '}<span class="syn-string">I</span>{'\n'}
+<span class="syn-response">200 Type set to I</span>{'\n'}
+{'\n'}
+<span class="syn-keyword">ftp> </span><span class="syn-string">get /data/results.tar.gz</span>{'\n'}
+<span class="syn-command">PASV</span>{'\n'}
+<span class="syn-response">227 Entering Passive Mode (<span class="syn-number">10,0,0,5,204,73</span>)</span>{'\n'}
+<span class="syn-command">RETR</span>{' '}<span class="syn-string">/data/results.tar.gz</span>{'\n'}
+<span class="syn-response">150 Opening BINARY mode data connection</span>{'\n'}
+<span class="syn-response">226 Transfer complete</span>{'\n'}
+{'\n'}
+<span class="syn-keyword">ftp> </span><span class="syn-string">quit</span>{'\n'}
+<span class="syn-command">QUIT</span>{'\n'}
 <span class="syn-response">221 Goodbye</span>
 </FtpSession>
 
 :::note
-Notice how the three dimensions we covered all appear in this session. The `TYPE I` command sets the **data type** to Image (binary). The structure defaults to **File** (no `STRU` command needed). And the mode defaults to **Stream** (no `MODE` command needed). The PASV/RETR exchange then transfers the file as a raw byte stream over a separate data connection — exactly as Stream mode specifies.
+Notice how the three dimensions from the Data Transfer Parameters section all appear in these sessions. The `TYPE I` command sets the **data type** to Image (binary). The structure defaults to **File** (no `STRU` command needed). And the mode defaults to **Stream** (no `MODE` command needed). The PASV/RETR exchange then transfers the file as a raw byte stream over a separate data connection.
 :::
+
+## Minimum Implementation
+
+The RFC specifies a minimum set of commands that every FTP implementation must support. A compliant server must handle these commands, and a compliant client must be able to send them:
+
+**Required commands:** `USER`, `QUIT`, `PORT`, `TYPE`, `MODE`, `STRU`, `RETR`, `STOR`, `NOOP`
+
+**Required defaults:**
+
+| Parameter | Default Value | Meaning |
+|-----------|--------------|---------|
+| TYPE | A N | ASCII, Non-print |
+| MODE | S | Stream |
+| STRU | F | File |
+
+The default values are chosen so that a minimal implementation can transfer text files without any parameter commands at all — connect, log in, retrieve. This design principle made FTP adoption easy: even a bare-bones implementation could interoperate with any server.
+
+All hosts must also accept `STRU R` (Record structure) because it is needed for internal representation on some systems. However, an implementation on a system without records may treat Record structure identically to File structure.
+
+<SourceRef section="5.1" quote="In order to make FTP workable without straining any unnecessarily, the following minimum implementation is required for all hosts." />
 
 ## Source & Further Reading
 
 <SourceCard
-  title="RFC 959 — File Transfer Protocol"
-  description="The complete specification of FTP, published October 1985. Section 3 covers data transfer parameters: data types, data structures, and transfer modes."
+  title="RFC 959 &mdash; File Transfer Protocol"
+  description="J. Postel, J. Reynolds, October 1985. The complete specification of the File Transfer Protocol, covering architecture, commands, reply codes, data transfer, and connection management."
   links={[
     { label: "RFC Editor", href: "https://www.rfc-editor.org/rfc/rfc959" },
     { label: "W3C version", href: "https://www.w3.org/Protocols/rfc959/" }
