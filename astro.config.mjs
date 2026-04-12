@@ -26,6 +26,12 @@ export default defineConfig({
 					],
 				},
 				{
+					label: 'Programming Languages',
+					items: [
+						{ label: 'C++ Cheatsheet', slug: 'geeksforgeeks.org/cpp/cpp-cheatsheet' },
+					],
+				},
+				{
 					label: 'Contributing',
 					items: [
 						{ label: 'Write an article', slug: 'contributing/write-an-article' },

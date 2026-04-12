@@ -1,6 +1,9 @@
 # Pretty Docs
 
-Pretty Docs rewrites ugly technical specifications (RFCs, man pages, standards) into clear, visual, well-sourced articles. Every claim cites the original spec. Every article is a companion to the original, not a replacement.
+Pretty Docs produces clear, visual, well-sourced technical articles. Articles come in two forms:
+
+1. **Single-source articles** — rewrite one specific document (RFC, man page, standard, tutorial) into a clear companion article. Every claim cites the original. Example: the FTP article rewrites RFC 959.
+2. **Comprehensive reference articles** — original articles synthesized from multiple sources, personal knowledge, and research. These aim to be the best practical reference on a topic. Example: the C++ Cheatsheet combines cppreference.com, GeeksforGeeks, and original content.
 
 **Live site:** https://yarikleto.github.io/pretty-docs/
 **Repo:** https://github.com/yarikleto/pretty-docs
@@ -39,7 +42,15 @@ npm run preview   # Preview production build (search works here)
 
 ## How to Add a New Article
 
-Adding an article is a two-phase pipeline: **Research** → **Write**. Each phase runs as a dedicated sub-agent. The research agent produces a structured extraction; the writer agent consumes it and produces the final MDX file, diagrams, and sidebar entry.
+There are two article types, each with a different workflow:
+
+### Article Type 1: Single-Source Article
+
+Rewrites one specific URL into a Pretty Docs article. Uses a three-phase pipeline: **Research** → **Write** → **Review**. Each phase runs as a dedicated sub-agent. The research agent extracts everything from the source; the writer produces the MDX; the reviewer fact-checks against the original.
+
+### Article Type 2: Comprehensive Reference Article
+
+An original article synthesized from multiple sources, the model's own knowledge, and web research. The goal is to produce the best practical reference on the topic — not to faithfully rewrite any single source. Sources should still be cited where applicable (use cppreference.com, MDN, official docs, etc.), but the article can include original examples, explanations, and structure. The workflow is more flexible: research broadly, write iteratively, expand based on what's missing.
 
 ### URL → File Path → Slug Rule
 
@@ -258,12 +269,13 @@ Reference existing diagrams for patterns:
 - No casual/jokey tone. Documentation, not a blog post.
 - Analogies only when they genuinely clarify.
 
-### Source citations (NON-NEGOTIABLE)
+### Source citations
+For single-source articles: every claim must cite the original spec section.
+For comprehensive reference articles: cite where applicable; original content is fine.
 1. Every diagram → <SourceRef> immediately below it.
-2. Every table from the spec → <SourceRef> below it.
-3. Every technical claim → cite the relevant spec section.
-4. End every article with <SourceCard>.
-5. Valid sources only: RFC Editor, IETF, W3C, ISO, official specs. Never blogs or Stack Overflow.
+2. Every table → <SourceRef> below it.
+3. End every article with <SourceCard>.
+4. Valid sources: official specs, cppreference, MDN, and other reputable technical references.
 
 ### Structure
 1. Opening paragraph: 3-4 sentences.
@@ -532,13 +544,19 @@ Without these, `<pre>` content renders as one long line.
 - **No casual/jokey tone.** Documentation, not a blog post.
 - Analogies only when they genuinely clarify.
 
-### Source Citations (non-negotiable)
+### Source Citations
 
+**Single-source articles:** Non-negotiable — every claim must cite the original.
 1. Every diagram → `<SourceRef>` immediately below it.
-2. Every table from the spec → `<SourceRef>` below it.
-3. Technical claims → cite the relevant spec section.
+2. Every table from the source → `<SourceRef>` below it.
+3. Technical claims → cite the relevant section.
 4. End every article with `<SourceCard>`.
-5. Valid sources only: RFC Editor, IETF, W3C, ISO, official specs, official man pages. Never blog posts or Stack Overflow.
+
+**Comprehensive reference articles:** Cite where applicable, but original content is fine.
+1. End every article with `<SourceCard>` linking to key references.
+2. Use `<SourceRef>` for sections derived from specific sources.
+3. Original examples and explanations do not need citations.
+4. Valid sources: RFC Editor, IETF, W3C, ISO, official specs, official man pages, cppreference, MDN, GeeksforGeeks, and other reputable technical references.
 
 ### Structure
 

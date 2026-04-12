@@ -1,0 +1,1901 @@
+---
+title: C++ Cheatsheet
+description: Comprehensive C++ reference — data types, control flow, OOP, templates, STL containers, smart pointers, lambdas, and more.
+slug: geeksforgeeks.org/cpp/cpp-cheatsheet
+prev: false
+next: false
+---
+
+import ArticleMeta from '../../../../components/article/ArticleMeta.astro';
+import SourceRef from '../../../../components/article/SourceRef.astro';
+import SourceCard from '../../../../components/article/SourceCard.astro';
+import RfcToggle from '../../../../components/article/RfcToggle.astro';
+import CppDataTypes from '../../../../components/diagrams/CppDataTypes.astro';
+
+<ArticleMeta
+  source="C++ Language Reference"
+  sourceUrl="https://en.cppreference.com/w/cpp"
+  readingTime="45 min"
+/>
+
+C++ is a general-purpose programming language created by Bjarne Stroustrup in 1979, first released in 1985. It supports procedural, object-oriented, and generic programming. C++ compiles to native machine code, giving direct control over hardware and memory — which makes it the standard choice for systems software, game engines, embedded systems, and high-performance applications. This cheatsheet is a comprehensive reference for building real applications in C++.
+
+## Program Structure
+
+Every C++ program follows a standard structure: include header files, declare the namespace, and define the `main()` function as the entry point. The `#include` directive imports library headers, `using namespace std;` brings the standard library into scope, and `main()` is where execution begins.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main()
+{
+    cout << "Hello, World!" << endl;
+    int num;
+    cout << "Enter a number: ";
+    cin >> num;
+    cout << "You entered: " << num << endl;
+    return 0;
+}
+```
+
+The `return 0;` statement signals successful program termination to the operating system.
+
+<SourceRef section="Basic Structure of C++ Program" />
+
+### Comments
+
+**Comments** are non-executable annotations in source code. C++ supports two forms:
+
+- **Single-line comments** start with `//` and extend to the end of the line.
+- **Multi-line comments** are enclosed between `/*` and `*/` and can span multiple lines.
+
+```cpp
+// This is a single-line comment
+
+/* This is a
+   multi-line comment */
+```
+
+<SourceRef section="Comments" />
+
+## Project Structure and Compilation
+
+Real C++ projects separate declarations from implementations using **header files** (`.h` or `.hpp`) and **source files** (`.cpp`). Headers contain class declarations, function prototypes, and constants. Source files contain the implementations.
+
+### Header and Source Files
+
+```cpp
+// math_utils.h — declaration
+#ifndef MATH_UTILS_H
+#define MATH_UTILS_H
+
+double circleArea(double radius);
+
+class Calculator {
+    double result;
+public:
+    Calculator();
+    void add(double val);
+    void subtract(double val);
+    double getResult() const;
+};
+
+#endif
+```
+
+```cpp
+// math_utils.cpp — implementation
+#include "math_utils.h"
+#include <cmath>
+
+double circleArea(double radius) {
+    return M_PI * radius * radius;
+}
+
+Calculator::Calculator() : result(0) {}
+void Calculator::add(double val) { result += val; }
+void Calculator::subtract(double val) { result -= val; }
+double Calculator::getResult() const { return result; }
+```
+
+```cpp
+// main.cpp — entry point
+#include <iostream>
+#include "math_utils.h"
+
+int main() {
+    Calculator calc;
+    calc.add(10);
+    calc.subtract(3);
+    std::cout << calc.getResult() << std::endl;  // 7
+    return 0;
+}
+```
+
+### Typical Project Layout
+
+```
+my_project/
+├── CMakeLists.txt       # Build configuration
+├── include/             # Public headers
+│   └── my_project/
+│       └── math_utils.h
+├── src/                 # Source files
+│   ├── main.cpp
+│   └── math_utils.cpp
+├── tests/               # Test files
+│   └── test_math.cpp
+├── lib/                 # Third-party libraries
+└── build/               # Build output (gitignored)
+```
+
+### Building with CMake
+
+**CMake** is the standard build system for C++ projects.
+
+```cmake
+# CMakeLists.txt
+cmake_minimum_required(VERSION 3.16)
+project(MyProject LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_executable(app
+    src/main.cpp
+    src/math_utils.cpp
+)
+
+target_include_directories(app PRIVATE include)
+```
+
+Build commands:
+```bash
+mkdir build && cd build
+cmake ..
+cmake --build .
+./app
+```
+
+### Compilation Process
+
+C++ compilation happens in four stages:
+
+| Stage | What happens | Tool |
+|-------|-------------|------|
+| Preprocessing | Expands `#include`, `#define`, macros | Preprocessor |
+| Compilation | Translates `.cpp` to assembly | Compiler |
+| Assembly | Converts assembly to object files (`.o`) | Assembler |
+| Linking | Combines object files into executable | Linker |
+
+```bash
+# Compile and link manually
+g++ -std=c++17 -c src/main.cpp -o build/main.o
+g++ -std=c++17 -c src/math_utils.cpp -o build/math_utils.o
+g++ build/main.o build/math_utils.o -o build/app
+```
+
+<SourceRef section="Project Structure" quote="cppreference.com" />
+
+## Variables and Data Types
+
+A **variable** is a named storage location in memory. Variables must be declared with a type before use. Variable names can contain letters, digits, and underscores, and must begin with a letter or underscore. **Identifiers** are unique names for variables. **Constants** are values that do not change during program execution.
+
+```cpp
+int age = 20;
+double height = 5.7;
+char grade = 'A';
+string name = "John";
+```
+
+<SourceRef section="Variables" />
+
+### Data Types
+
+C++ provides six fundamental data types for storing different kinds of values.
+
+<CppDataTypes />
+<SourceRef section="Data Types" />
+
+| Type | Size | Description | Example |
+|------|------|-------------|---------|
+| `int` | 4 bytes | Whole numbers | `10`, `-5`, `0` |
+| `float` | 4 bytes | Decimal numbers, single precision | `3.14f` |
+| `double` | 8 bytes | Decimal numbers, double precision | `3.14159` |
+| `char` | 1 byte | Single characters | `'A'`, `'b'` |
+| `bool` | 1 byte | Boolean values | `true`, `false` |
+| `string` | Variable | Text sequences | `"Hello"` |
+
+<SourceRef section="Data Types" />
+
+Each type has a specific use case:
+
+```cpp
+int age = 25;
+float pi = 3.14f;
+float area = pi * 5 * 5;
+
+double price = 99.99;
+double discount = price * 0.1;
+
+char grade = 'A';
+
+bool isStudent = true;
+
+string firstName = "John";
+string lastName = "Doe";
+string fullName = firstName + " " + lastName;
+```
+
+<SourceRef section="Data Types" />
+
+## Input and Output
+
+C++ uses the `<iostream>` library for console I/O. The **`cout`** object with the insertion operator `<<` writes output to the console. The **`cin`** object with the extraction operator `>>` reads input from the user.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main()
+{
+    int age;
+    cout << "Enter your age: ";
+    cin >> age;
+    cout << "Your age is: " << age << endl;
+    return 0;
+}
+```
+
+The `<<` operator can be chained to output multiple values in a single statement. The `endl` manipulator inserts a newline and flushes the output buffer.
+
+<SourceRef section="Input and Output" />
+
+## Conditional Statements
+
+Conditional statements control the flow of execution based on boolean conditions. C++ provides five forms.
+
+### if Statement
+
+Executes a block of code only when the condition evaluates to `true`.
+
+```cpp
+int i = 10;
+
+if (i < 15) {
+    cout << "10 is less than 15";
+}
+```
+
+### if-else Statement
+
+Provides two execution paths — one for `true`, one for `false`.
+
+```cpp
+int i = 10;
+
+if (i < 15) {
+    cout << "10 is less than 15";
+} else {
+    cout << "10 is not less than 15";
+}
+```
+
+### else if Ladder
+
+Tests multiple conditions sequentially. The first condition that evaluates to `true` executes its block; the rest are skipped.
+
+```cpp
+int marks = 85;
+
+if (marks >= 90) {
+    cout << "A" << endl;
+} else if (marks >= 80) {
+    cout << "B" << endl;
+} else if (marks >= 70) {
+    cout << "C" << endl;
+} else if (marks >= 60) {
+    cout << "D" << endl;
+} else {
+    cout << "F" << endl;
+}
+```
+
+### switch Statement
+
+Evaluates a variable against multiple `case` values. Each case requires a `break` to prevent fall-through. The `default` case handles unmatched values.
+
+```cpp
+char x = 'A';
+
+switch (x) {
+    case 'A':
+        cout << "A";
+        break;
+    case 'B':
+        cout << "B";
+        break;
+    default:
+        cout << "Other than A and B";
+        break;
+}
+```
+
+### Ternary Operator
+
+A compact conditional expression: `condition ? value_if_true : value_if_false`.
+
+```cpp
+int x = 10, y = 20;
+
+int max_val = (x > y) ? x : y;
+cout << "The maximum value is " << max_val;
+```
+
+<SourceRef section="Conditional Statements" />
+
+## Loops
+
+Loops execute a block of code repeatedly. C++ provides three loop constructs.
+
+### for Loop
+
+Repeats a fixed number of times. The loop header declares the initializer, condition, and increment in a single line.
+
+```cpp
+for (int i = 5; i < 10; i++) {
+    cout << "Hi" << endl;
+}
+```
+
+### while Loop
+
+Repeats while a condition is `true`. The condition is checked before each iteration — if it is `false` initially, the body never executes.
+
+```cpp
+int i = 0;
+while (i < 5) {
+    cout << "Hi" << endl;
+    i++;
+}
+```
+
+### do-while Loop
+
+Executes the body at least once, then checks the condition. The condition is evaluated after each iteration.
+
+```cpp
+int i = 0;
+do {
+    cout << "Hi" << endl;
+    i++;
+} while (i < 5);
+```
+
+<SourceRef section="Loops" />
+
+## Arrays
+
+An **array** is a fixed-size collection of elements of the same type, stored in contiguous memory. Elements are accessed by zero-based index.
+
+```cpp
+int arr[5] = {2, 4, 8, 12, 16};
+
+// Access elements
+cout << arr[0] << endl;  // 2
+cout << arr[2] << endl;  // 8
+
+// Modify an element
+arr[1] = 10;
+
+// Iterate over array
+for (int i = 0; i < 5; i++) {
+    cout << arr[i] << " ";
+}
+```
+
+<SourceRef section="Arrays" />
+
+### Multi-Dimensional Arrays
+
+A **multi-dimensional array** is an array of arrays. The most common form is a two-dimensional array organized as rows and columns.
+
+```cpp
+int matrix[3][4] = {
+    {1, 2, 3, 4},
+    {5, 6, 7, 8},
+    {9, 10, 11, 12}
+};
+
+// Access element at row 1, column 2
+cout << matrix[1][2] << endl;  // 7
+
+// Iterate over 2D array
+for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 4; j++) {
+        cout << matrix[i][j] << " ";
+    }
+    cout << endl;
+}
+```
+
+<SourceRef section="Multi-Dimensional Arrays" />
+
+## Vectors
+
+A **vector** is a dynamic array from the C++ Standard Template Library (STL). Unlike fixed-size arrays, vectors can grow and shrink at runtime. Include `<vector>` to use them.
+
+```cpp
+#include <vector>
+using namespace std;
+
+// Empty vector
+vector<int> v1;
+
+// Vector of size 3, all elements initialized to 5
+vector<int> v2(3, 5);
+
+// Vector with initializer list
+vector<int> v3 = {1, 2, 3};
+```
+
+Key vector operations:
+
+```cpp
+vector<int> v = {1, 2, 3};
+
+v.push_back(4);    // Add element to end: {1, 2, 3, 4}
+v.pop_back();       // Remove last element: {1, 2, 3}
+cout << v.size();   // Number of elements: 3
+v.clear();          // Remove all elements
+```
+
+| Method | Description |
+|--------|-------------|
+| `push_back(val)` | Adds an element to the end |
+| `pop_back()` | Removes the last element |
+| `size()` | Returns the number of elements |
+| `clear()` | Removes all elements |
+
+<SourceRef section="Vectors" />
+
+## References and Pointers
+
+### References
+
+A **reference** is an alias for an existing variable. It shares the same memory address as the original and cannot be reassigned to refer to a different variable after initialization.
+
+```cpp
+int x = 10;
+int &ref = x;    // ref is an alias for x
+
+ref = 22;         // modifies x
+cout << x << endl; // 22
+```
+
+<SourceRef section="References" />
+
+### Pointers
+
+A **pointer** is a variable that stores the memory address of another variable. The address-of operator `&` retrieves a variable's address. The dereference operator `*` accesses the value at a pointer's address.
+
+```cpp
+int var = 10;
+int *ptr = &var;   // ptr holds the address of var
+
+cout << "Value of x: " << var << endl;
+cout << "Address of x: " << &var << endl;
+cout << "Value stored in pointer ptr: " << ptr << endl;
+cout << "Value pointed to by ptr: " << *ptr << endl;
+```
+
+<SourceRef section="Pointers" />
+
+## Functions
+
+A **function** is a reusable block of code that performs a specific task. Functions can accept parameters and return values. The general syntax is:
+
+```cpp
+returnType functionName(parameters) {
+    // function body
+    return value;
+}
+```
+
+Example:
+
+```cpp
+void greet() {
+    cout << "Hello, World!" << endl;
+}
+
+int main() {
+    greet();
+    return 0;
+}
+```
+
+Functions help avoid repeating code and make programs more organized. They can take inputs (parameters) and return values, both of which are optional.
+
+<SourceRef section="Functions" />
+
+## Function Features
+
+### Default Parameters
+
+```cpp
+void log(const string& msg, int level = 1) {
+    if (level > 0) cout << "[" << level << "] " << msg << endl;
+}
+
+log("hello");       // level defaults to 1
+log("error", 3);    // level = 3
+```
+
+### Pass by Value, Reference, and Pointer
+
+```cpp
+void byValue(int x)     { x = 0; }         // copy — original unchanged
+void byRef(int& x)      { x = 0; }         // reference — modifies original
+void byPtr(int* x)      { *x = 0; }        // pointer — modifies original
+void byConstRef(const string& s) { ... }    // read-only, no copy
+```
+
+:::note
+Pass large objects by `const&` to avoid expensive copies. Pass small types (`int`, `double`, `bool`, pointers) by value.
+:::
+
+### Overloaded Functions
+
+```cpp
+int area(int side)             { return side * side; }
+int area(int width, int height) { return width * height; }
+double area(double radius)     { return 3.14159 * radius * radius; }
+```
+
+### Inline Functions
+
+The `inline` keyword suggests the compiler replace the function call with its body. Modern compilers typically decide this automatically.
+
+```cpp
+inline int square(int x) { return x * x; }
+```
+
+### Recursive Functions
+
+```cpp
+int factorial(int n) {
+    if (n <= 1) return 1;
+    return n * factorial(n - 1);
+}
+```
+
+<SourceRef section="Functions" quote="cppreference.com" />
+
+## String Functions
+
+The `string` class provides built-in methods for common text operations.
+
+| Function | Description | Example |
+|----------|-------------|---------|
+| `length()` | Returns the number of characters | `s.length()` |
+| `substr(pos, len)` | Extracts a substring starting at `pos` with length `len` | `s.substr(0, 5)` |
+| `append(str)` | Appends `str` to the end of the string | `s.append(" world")` |
+| `compare(str)` | Lexicographic comparison; returns `0` if equal | `s.compare("hello")` |
+| `empty()` | Returns `true` if the string has no characters | `s.empty()` |
+
+```cpp
+string s = "Hello, World!";
+
+cout << s.length() << endl;        // 13
+cout << s.substr(0, 5) << endl;    // Hello
+s.append(" C++");                   // "Hello, World! C++"
+cout << s.compare("Hello") << endl; // non-zero (not equal)
+cout << s.empty() << endl;          // 0 (false)
+```
+
+<SourceRef section="String Functions" />
+
+## Math Functions
+
+C++ provides standard mathematical functions for common operations.
+
+| Function | Description | Example |
+|----------|-------------|---------|
+| `min(x, y)` | Returns the smaller of two values | `min(5, 3)` returns `3` |
+| `max(x, y)` | Returns the larger of two values | `max(5, 3)` returns `5` |
+| `sqrt(x)` | Returns the square root | `sqrt(16)` returns `4` |
+| `ceil(x)` | Rounds up to the nearest integer | `ceil(4.3)` returns `5` |
+| `floor(x)` | Rounds down to the nearest integer | `floor(4.7)` returns `4` |
+| `pow(x, n)` | Returns `x` raised to the power `n` | `pow(2, 3)` returns `8` |
+
+```cpp
+#include <cmath>
+
+cout << min(5, 3) << endl;      // 3
+cout << max(5, 3) << endl;      // 5
+cout << sqrt(16) << endl;       // 4
+cout << ceil(4.3) << endl;      // 5
+cout << floor(4.7) << endl;     // 4
+cout << pow(2, 3) << endl;      // 8
+```
+
+<SourceRef section="Math Functions" />
+
+## Operators
+
+C++ provides a comprehensive set of **operators** for performing computations, comparisons, and logical operations.
+
+### Arithmetic Operators
+
+| Operator | Description | Example |
+|----------|-------------|---------|
+| `+` | Addition | `a + b` |
+| `-` | Subtraction | `a - b` |
+| `*` | Multiplication | `a * b` |
+| `/` | Division | `a / b` |
+| `%` | Modulus (remainder) | `a % b` |
+| `++` | Increment | `a++` or `++a` |
+| `--` | Decrement | `a--` or `--a` |
+
+### Relational Operators
+
+| Operator | Description | Example |
+|----------|-------------|---------|
+| `==` | Equal to | `a == b` |
+| `!=` | Not equal to | `a != b` |
+| `>` | Greater than | `a > b` |
+| `<` | Less than | `a < b` |
+| `>=` | Greater than or equal to | `a >= b` |
+| `<=` | Less than or equal to | `a <= b` |
+
+### Logical Operators
+
+| Operator | Description | Example |
+|----------|-------------|---------|
+| `&&` | Logical AND | `a && b` |
+| `\|\|` | Logical OR | `a \|\| b` |
+| `!` | Logical NOT | `!a` |
+
+### Bitwise Operators
+
+| Operator | Description | Example |
+|----------|-------------|---------|
+| `&` | Bitwise AND | `a & b` |
+| `\|` | Bitwise OR | `a \| b` |
+| `^` | Bitwise XOR | `a ^ b` |
+| `~` | Bitwise NOT | `~a` |
+| `<<` | Left shift | `a << 2` |
+| `>>` | Right shift | `a >> 2` |
+
+### Assignment Operators
+
+| Operator | Description | Example |
+|----------|-------------|---------|
+| `=` | Assign | `a = 5` |
+| `+=` | Add and assign | `a += 3` |
+| `-=` | Subtract and assign | `a -= 3` |
+| `*=` | Multiply and assign | `a *= 3` |
+| `/=` | Divide and assign | `a /= 3` |
+| `%=` | Modulus and assign | `a %= 3` |
+
+<SourceRef section="Operators" quote="cppreference.com" />
+
+## const and constexpr
+
+### const
+
+The **`const`** qualifier makes a variable or parameter read-only after initialization. Use it liberally — it prevents bugs and documents intent.
+
+```cpp
+const int MAX = 100;
+// MAX = 200;  // ERROR: cannot modify
+
+const string& name = getName();  // read-only reference, no copy
+
+class Circle {
+    double radius;
+public:
+    double area() const { return 3.14 * radius * radius; }  // does not modify object
+};
+```
+
+### constexpr
+
+**`constexpr`** (C++11) marks values and functions that can be evaluated at compile time.
+
+```cpp
+constexpr int square(int x) { return x * x; }
+constexpr int val = square(5);  // computed at compile time: 25
+
+constexpr int fib(int n) {
+    return (n <= 1) ? n : fib(n - 1) + fib(n - 2);
+}
+static_assert(fib(10) == 55);  // verified at compile time
+```
+
+### const Correctness Cheatsheet
+
+| Declaration | Meaning |
+|------------|---------|
+| `const int x = 5` | `x` cannot be changed |
+| `const int* p` | Cannot change value through `p` (pointer to const) |
+| `int* const p` | Cannot reassign `p` itself (const pointer) |
+| `const int* const p` | Both are const |
+| `void f(const T& x)` | Function does not modify `x` |
+| `int get() const` | Member function does not modify the object |
+
+<SourceRef section="const and constexpr" quote="cppreference.com" />
+
+## Classes and Objects
+
+A **class** is a user-defined data type that bundles data members (variables) and member functions (methods) into a single unit. An **object** is an instance of a class.
+
+```cpp
+class Car {
+public:
+    string brand;
+    int year;
+
+    void display() {
+        cout << brand << " (" << year << ")" << endl;
+    }
+};
+
+int main() {
+    Car c;
+    c.brand = "Toyota";
+    c.year = 2024;
+    c.display();  // Toyota (2024)
+}
+```
+
+<SourceRef section="Object-Oriented Programming" />
+
+### Access Specifiers
+
+**Access specifiers** control the visibility of class members.
+
+| Specifier | Access within class | Access in derived class | Access outside class |
+|-----------|-------------------|----------------------|---------------------|
+| `public` | Yes | Yes | Yes |
+| `protected` | Yes | Yes | No |
+| `private` | Yes | No | No |
+
+```cpp
+class Account {
+private:
+    double balance;       // only accessible within this class
+protected:
+    string accountId;     // accessible in derived classes
+public:
+    string ownerName;     // accessible everywhere
+
+    void setBalance(double b) { balance = b; }
+    double getBalance() { return balance; }
+};
+```
+
+<SourceRef section="Object-Oriented Programming" quote="cppreference.com" />
+
+### Constructors and Destructors
+
+A **constructor** initializes an object when it is created. A **destructor** cleans up when an object goes out of scope.
+
+```cpp
+class Point {
+    int x, y;
+public:
+    Point() : x(0), y(0) {}                   // default constructor
+    Point(int x, int y) : x(x), y(y) {}       // parameterized constructor
+    Point(const Point& p) : x(p.x), y(p.y) {} // copy constructor
+    ~Point() {}                                 // destructor
+};
+
+Point p1;          // default: (0, 0)
+Point p2(3, 4);    // parameterized: (3, 4)
+Point p3(p2);      // copy: (3, 4)
+```
+
+<SourceRef section="Object-Oriented Programming" quote="cppreference.com" />
+
+### The `this` Pointer
+
+The **`this`** pointer is an implicit pointer available inside member functions that points to the calling object.
+
+```cpp
+class Box {
+    int size;
+public:
+    Box& setSize(int size) {
+        this->size = size;   // distinguishes member from parameter
+        return *this;        // enables method chaining
+    }
+};
+```
+
+<SourceRef section="Object-Oriented Programming" quote="cppreference.com" />
+
+## Encapsulation
+
+**Encapsulation** bundles data and the functions that operate on it into a single class, restricting direct access to internal state through access specifiers. External code interacts with the object through **getters** and **setters**.
+
+```cpp
+class Temperature {
+    double celsius;  // private by default
+public:
+    void set(double c) {
+        if (c >= -273.15)  // validation logic
+            celsius = c;
+    }
+    double get() const { return celsius; }
+    double fahrenheit() const { return celsius * 9.0 / 5.0 + 32; }
+};
+```
+
+<SourceRef section="Pillars of OOPs" />
+
+## static Members
+
+**`static`** class members belong to the class itself, not to any specific object. Static data members are shared across all instances. Static member functions can be called without an object.
+
+```cpp
+class Counter {
+    static int count;   // declaration
+public:
+    Counter() { count++; }
+    ~Counter() { count--; }
+    static int getCount() { return count; }  // no this pointer
+};
+
+int Counter::count = 0;  // definition (required, usually in .cpp)
+
+Counter a, b, c;
+cout << Counter::getCount();  // 3
+```
+
+### Other Uses of static
+
+| Context | Effect |
+|---------|--------|
+| `static` local variable | Persists across function calls, initialized once |
+| `static` global variable/function | Internal linkage — visible only in the current translation unit |
+| `static` class member | Shared across all instances of the class |
+
+```cpp
+void counter() {
+    static int n = 0;  // initialized once, persists across calls
+    cout << ++n << " ";
+}
+counter(); counter(); counter();  // 1 2 3
+```
+
+<SourceRef section="static Members" quote="cppreference.com" />
+
+## Inheritance
+
+**Inheritance** allows a derived class to acquire the properties and behavior of a base class, promoting code reuse.
+
+### Single Inheritance
+
+```cpp
+class Animal {
+public:
+    string name;
+    void eat() { cout << name << " eats" << endl; }
+};
+
+class Dog : public Animal {
+public:
+    void bark() { cout << name << " barks" << endl; }
+};
+
+Dog d;
+d.name = "Rex";
+d.eat();   // Rex eats
+d.bark();  // Rex barks
+```
+
+### Multiple Inheritance
+
+A class can inherit from more than one base class.
+
+```cpp
+class Printable {
+public:
+    void print() { cout << "Printing..." << endl; }
+};
+
+class Scannable {
+public:
+    void scan() { cout << "Scanning..." << endl; }
+};
+
+class Printer : public Printable, public Scannable {};
+
+Printer p;
+p.print();  // Printing...
+p.scan();   // Scanning...
+```
+
+### Access Specifiers in Inheritance
+
+The inheritance access specifier controls how base class members are exposed in the derived class.
+
+| Base member | `public` inheritance | `protected` inheritance | `private` inheritance |
+|-------------|---------------------|------------------------|----------------------|
+| `public` | `public` | `protected` | `private` |
+| `protected` | `protected` | `protected` | `private` |
+| `private` | Not accessible | Not accessible | Not accessible |
+
+### Method Overriding
+
+A derived class can **override** a base class method by defining a function with the same signature.
+
+```cpp
+class Shape {
+public:
+    void draw() { cout << "Drawing shape" << endl; }
+};
+
+class Circle : public Shape {
+public:
+    void draw() { cout << "Drawing circle" << endl; }
+};
+
+Circle c;
+c.draw();  // Drawing circle
+```
+
+<SourceRef section="Pillars of OOPs" quote="cppreference.com" />
+
+## friend Keyword
+
+A **`friend`** declaration grants a non-member function or another class access to private and protected members.
+
+```cpp
+class Box {
+    double width;
+public:
+    Box(double w) : width(w) {}
+    friend void printWidth(const Box& b);          // friend function
+    friend class BoxFactory;                        // friend class
+};
+
+void printWidth(const Box& b) {
+    cout << b.width;  // can access private member
+}
+```
+
+Use `friend` sparingly — it breaks encapsulation. Common legitimate uses: operator overloading (e.g., `operator<<`) and factory classes.
+
+<SourceRef section="friend" quote="cppreference.com" />
+
+## Virtual Inheritance
+
+When a class inherits from two bases that share a common ancestor, the **diamond problem** creates two copies of the ancestor's members. **Virtual inheritance** ensures only one copy exists.
+
+```cpp
+class Animal { public: string name; };
+
+class Mammal : virtual public Animal {};   // virtual
+class WingedAnimal : virtual public Animal {};   // virtual
+
+class Bat : public Mammal, public WingedAnimal {};
+
+Bat b;
+b.name = "Bruce";  // OK — only one copy of Animal::name
+```
+
+Without `virtual`, `b.name` would be ambiguous (two copies of `Animal`).
+
+<SourceRef section="Virtual Inheritance" quote="cppreference.com" />
+
+## Polymorphism
+
+**Polymorphism** allows one interface to represent different underlying types. C++ supports both compile-time and runtime polymorphism.
+
+### Function Overloading (Compile-Time)
+
+Multiple functions can share the same name if they differ in parameter types or count.
+
+```cpp
+int add(int a, int b) { return a + b; }
+double add(double a, double b) { return a + b; }
+int add(int a, int b, int c) { return a + b + c; }
+```
+
+### Operator Overloading
+
+Class-specific behavior for operators is defined using the `operator` keyword.
+
+```cpp
+class Vec2 {
+public:
+    double x, y;
+    Vec2(double x, double y) : x(x), y(y) {}
+
+    Vec2 operator+(const Vec2& v) const {
+        return Vec2(x + v.x, y + v.y);
+    }
+};
+
+Vec2 a(1, 2), b(3, 4);
+Vec2 c = a + b;  // (4, 6)
+```
+
+### Virtual Functions (Runtime Polymorphism)
+
+A **virtual function** in the base class allows derived classes to provide their own implementation, resolved at runtime through a base pointer or reference.
+
+```cpp
+class Shape {
+public:
+    virtual void draw() { cout << "Shape" << endl; }
+    virtual ~Shape() {}  // virtual destructor
+};
+
+class Circle : public Shape {
+public:
+    void draw() override { cout << "Circle" << endl; }
+};
+
+Shape* s = new Circle();
+s->draw();  // Circle (resolved at runtime)
+delete s;
+```
+
+### Abstract Classes and Pure Virtual Functions
+
+A **pure virtual function** has no implementation in the base class. A class with at least one pure virtual function is an **abstract class** and cannot be instantiated. This is the C++ equivalent of an interface.
+
+```cpp
+class Drawable {
+public:
+    virtual void draw() = 0;  // pure virtual
+    virtual ~Drawable() {}
+};
+
+class Square : public Drawable {
+public:
+    void draw() override { cout << "Drawing square" << endl; }
+};
+
+// Drawable d;       // ERROR: cannot instantiate abstract class
+Square sq;
+sq.draw();           // Drawing square
+```
+
+<SourceRef section="Pillars of OOPs" quote="cppreference.com" />
+
+## Structs
+
+A **struct** is identical to a class except that its members are `public` by default (class members are `private` by default).
+
+```cpp
+struct Point {
+    double x, y;      // public by default
+
+    double distance() const {
+        return sqrt(x * x + y * y);
+    }
+};
+
+Point p = {3.0, 4.0};
+cout << p.distance();  // 5
+```
+
+| Feature | `struct` | `class` |
+|---------|----------|---------|
+| Default access | `public` | `private` |
+| Default inheritance | `public` | `private` |
+| Convention | Plain data aggregates | Objects with behavior |
+
+<SourceRef section="Structs" quote="cppreference.com" />
+
+## Enums
+
+**Enums** define a set of named integer constants.
+
+### Traditional Enums
+
+```cpp
+enum Color { RED, GREEN, BLUE };  // RED=0, GREEN=1, BLUE=2
+
+Color c = GREEN;
+cout << c;  // 1
+```
+
+Traditional enums are unscoped — their values leak into the enclosing scope and implicitly convert to `int`.
+
+### Scoped Enums (`enum class`)
+
+**Scoped enums** (C++11) provide type safety and prevent implicit conversions.
+
+```cpp
+enum class Direction { UP, DOWN, LEFT, RIGHT };
+
+Direction d = Direction::UP;
+// int n = d;                  // ERROR: no implicit conversion
+int n = static_cast<int>(d);   // explicit conversion: 0
+```
+
+<SourceRef section="Enums" quote="cppreference.com" />
+
+## Templates
+
+**Templates** enable writing generic code that works with any data type. The compiler generates type-specific versions at compile time.
+
+### Function Templates
+
+```cpp
+template <typename T>
+T maximum(T a, T b) {
+    return (a > b) ? a : b;
+}
+
+cout << maximum(3, 7);       // 7   (int)
+cout << maximum(3.5, 2.1);   // 3.5 (double)
+```
+
+### Class Templates
+
+```cpp
+template <typename T>
+class Stack {
+    vector<T> data;
+public:
+    void push(const T& val) { data.push_back(val); }
+    T pop() {
+        T top = data.back();
+        data.pop_back();
+        return top;
+    }
+    bool empty() const { return data.empty(); }
+};
+
+Stack<int> intStack;
+intStack.push(42);
+```
+
+<SourceRef section="Templates" quote="cppreference.com" />
+
+## Exception Handling
+
+C++ handles runtime errors with **try**, **catch**, and **throw**. When an error occurs, `throw` creates an exception that propagates up the call stack until a matching `catch` block is found.
+
+```cpp
+try {
+    int age = -1;
+    if (age < 0)
+        throw invalid_argument("Age cannot be negative");
+} catch (const invalid_argument& e) {
+    cout << "Error: " << e.what() << endl;
+} catch (const exception& e) {
+    cout << "General error: " << e.what() << endl;
+} catch (...) {
+    cout << "Unknown error" << endl;
+}
+```
+
+Common standard exception classes:
+
+| Exception | Header | Use |
+|-----------|--------|-----|
+| `std::exception` | `<exception>` | Base class for all standard exceptions |
+| `std::runtime_error` | `<stdexcept>` | Errors detectable only at runtime |
+| `std::logic_error` | `<stdexcept>` | Errors due to faulty logic |
+| `std::invalid_argument` | `<stdexcept>` | Invalid function arguments |
+| `std::out_of_range` | `<stdexcept>` | Index out of range |
+| `std::bad_alloc` | `<new>` | Memory allocation failure |
+
+<SourceRef section="Exception Handling" quote="cppreference.com" />
+
+## Lambda Expressions
+
+A **lambda expression** (C++11) creates an anonymous function object inline. The syntax is `[capture](parameters) -> return_type { body }`.
+
+```cpp
+auto greet = []() { cout << "Hello" << endl; };
+greet();  // Hello
+
+auto add = [](int a, int b) { return a + b; };
+cout << add(3, 4);  // 7
+```
+
+### Capture Clauses
+
+The **capture clause** `[]` specifies which variables from the enclosing scope the lambda can access.
+
+| Capture | Meaning |
+|---------|---------|
+| `[]` | Capture nothing |
+| `[=]` | Capture all local variables by value |
+| `[&]` | Capture all local variables by reference |
+| `[x]` | Capture `x` by value |
+| `[&x]` | Capture `x` by reference |
+| `[=, &x]` | All by value except `x` by reference |
+
+```cpp
+int factor = 3;
+auto multiply = [factor](int x) { return x * factor; };
+cout << multiply(5);  // 15
+
+auto increment = [&factor]() { factor++; };
+increment();
+cout << factor;  // 4
+```
+
+<SourceRef section="Lambda Expressions" quote="cppreference.com" />
+
+## Dynamic Memory
+
+C++ allocates memory on the heap using **`new`** and releases it with **`delete`**. Forgetting to `delete` causes memory leaks.
+
+```cpp
+// Single object
+int* p = new int(42);
+cout << *p;  // 42
+delete p;
+
+// Array
+int* arr = new int[5]{1, 2, 3, 4, 5};
+cout << arr[2];  // 3
+delete[] arr;
+```
+
+:::caution
+Always pair `new` with `delete` and `new[]` with `delete[]`. Mismatching them causes undefined behavior. Prefer smart pointers (see below) over raw `new`/`delete`.
+:::
+
+<SourceRef section="Dynamic Memory" quote="cppreference.com" />
+
+## Smart Pointers
+
+**Smart pointers** (C++11, `<memory>`) automate memory management by destroying the owned object when the pointer goes out of scope.
+
+### `unique_ptr`
+
+**`unique_ptr`** owns an object exclusively — it cannot be copied, only moved.
+
+```cpp
+#include <memory>
+
+unique_ptr<int> p = make_unique<int>(42);
+cout << *p;  // 42
+// unique_ptr<int> p2 = p;          // ERROR: cannot copy
+unique_ptr<int> p2 = move(p);       // OK: transfers ownership
+```
+
+### `shared_ptr`
+
+**`shared_ptr`** allows multiple pointers to share ownership. The object is destroyed when the last `shared_ptr` is destroyed.
+
+```cpp
+shared_ptr<int> a = make_shared<int>(10);
+shared_ptr<int> b = a;   // reference count: 2
+cout << a.use_count();    // 2
+```
+
+### `weak_ptr`
+
+**`weak_ptr`** observes an object owned by `shared_ptr` without affecting the reference count. Used to break circular references.
+
+```cpp
+shared_ptr<int> sp = make_shared<int>(5);
+weak_ptr<int> wp = sp;
+
+if (auto locked = wp.lock()) {  // convert to shared_ptr
+    cout << *locked;  // 5
+}
+```
+
+<SourceRef section="Smart Pointers" quote="cppreference.com" />
+
+## Move Semantics
+
+**Move semantics** (C++11) transfer resources from one object to another instead of copying. An **rvalue reference** (`T&&`) binds to temporaries and objects about to be destroyed.
+
+### Move Constructor and Move Assignment
+
+```cpp
+class Buffer {
+    int* data;
+    size_t size;
+public:
+    Buffer(size_t n) : data(new int[n]), size(n) {}
+    ~Buffer() { delete[] data; }
+
+    // Copy — expensive
+    Buffer(const Buffer& other) : data(new int[other.size]), size(other.size) {
+        copy(other.data, other.data + size, data);
+    }
+
+    // Move — cheap, steals resources
+    Buffer(Buffer&& other) noexcept : data(other.data), size(other.size) {
+        other.data = nullptr;
+        other.size = 0;
+    }
+
+    // Move assignment
+    Buffer& operator=(Buffer&& other) noexcept {
+        if (this != &other) {
+            delete[] data;
+            data = other.data;
+            size = other.size;
+            other.data = nullptr;
+            other.size = 0;
+        }
+        return *this;
+    }
+};
+```
+
+### std::move
+
+`std::move` casts an lvalue to an rvalue reference, enabling the move constructor or move assignment.
+
+```cpp
+Buffer a(1000);
+Buffer b = std::move(a);  // moves a's resources to b; a is now empty
+```
+
+:::note
+After `std::move`, the source object is in a valid but unspecified state. Do not read from it — only reassign or destroy it.
+:::
+
+<SourceRef section="Move Semantics" quote="cppreference.com" />
+
+## RAII
+
+**Resource Acquisition Is Initialization** is the core C++ idiom for resource management. Resources (memory, files, locks, sockets) are acquired in the constructor and released in the destructor. When the object goes out of scope, cleanup happens automatically — no manual release needed.
+
+```cpp
+class FileHandle {
+    FILE* f;
+public:
+    FileHandle(const char* path) : f(fopen(path, "r")) {
+        if (!f) throw runtime_error("Cannot open file");
+    }
+    ~FileHandle() { if (f) fclose(f); }       // automatic cleanup
+
+    FileHandle(const FileHandle&) = delete;    // prevent copying
+    FileHandle& operator=(const FileHandle&) = delete;
+};
+
+void readConfig() {
+    FileHandle config("app.conf");
+    // ... use config ...
+}   // config.~FileHandle() called automatically, file closed
+```
+
+The standard library uses RAII everywhere: `vector` manages heap memory, `unique_ptr` manages owned objects, `lock_guard` manages mutexes, `fstream` manages file handles.
+
+<SourceRef section="RAII" quote="cppreference.com" />
+
+## STL Containers
+
+The **Standard Template Library** provides a set of generic container classes.
+
+### Associative Containers
+
+| Container | Description | Header | Ordered |
+|-----------|-------------|--------|---------|
+| `map<K,V>` | Key-value pairs, unique keys | `<map>` | Yes |
+| `multimap<K,V>` | Key-value pairs, duplicate keys allowed | `<map>` | Yes |
+| `set<T>` | Unique elements | `<set>` | Yes |
+| `multiset<T>` | Duplicate elements allowed | `<set>` | Yes |
+| `unordered_map<K,V>` | Hash map, unique keys | `<unordered_map>` | No |
+| `unordered_set<T>` | Hash set, unique elements | `<unordered_set>` | No |
+
+```cpp
+#include <map>
+#include <set>
+
+map<string, int> ages;
+ages["Alice"] = 30;
+ages["Bob"] = 25;
+
+for (auto& [name, age] : ages)
+    cout << name << ": " << age << endl;
+
+set<int> s = {3, 1, 4, 1, 5};  // {1, 3, 4, 5} — duplicates removed, sorted
+```
+
+### Container Adaptors
+
+| Container | Description | Header | Underlying |
+|-----------|-------------|--------|------------|
+| `stack<T>` | LIFO structure | `<stack>` | `deque` |
+| `queue<T>` | FIFO structure | `<queue>` | `deque` |
+| `priority_queue<T>` | Max-heap by default | `<queue>` | `vector` |
+
+```cpp
+#include <stack>
+#include <queue>
+
+stack<int> st;
+st.push(1); st.push(2); st.push(3);
+cout << st.top();  // 3
+st.pop();
+
+queue<int> q;
+q.push(1); q.push(2);
+cout << q.front();  // 1
+q.pop();
+
+priority_queue<int> pq;
+pq.push(3); pq.push(1); pq.push(4);
+cout << pq.top();  // 4
+```
+
+### Sequence Containers
+
+| Container | Description | Header | Random Access |
+|-----------|-------------|--------|---------------|
+| `vector<T>` | Dynamic array | `<vector>` | Yes |
+| `deque<T>` | Double-ended queue | `<deque>` | Yes |
+| `list<T>` | Doubly linked list | `<list>` | No |
+| `forward_list<T>` | Singly linked list | `<forward_list>` | No |
+| `array<T,N>` | Fixed-size array | `<array>` | Yes |
+
+```cpp
+#include <list>
+#include <deque>
+
+list<int> lst = {1, 2, 3};
+lst.push_front(0);   // {0, 1, 2, 3}
+lst.push_back(4);    // {0, 1, 2, 3, 4}
+
+deque<int> dq = {2, 3, 4};
+dq.push_front(1);    // {1, 2, 3, 4}
+dq.push_back(5);     // {1, 2, 3, 4, 5}
+```
+
+<SourceRef section="STL Containers" quote="cppreference.com" />
+
+## Iterators and STL Algorithms
+
+### Iterators
+
+**Iterators** are the standard way to traverse containers. Every STL container provides `begin()` and `end()` iterators.
+
+```cpp
+vector<int> v = {10, 20, 30, 40};
+
+// Iterator loop
+for (auto it = v.begin(); it != v.end(); ++it) {
+    cout << *it << " ";
+}
+
+// Range-based for (preferred)
+for (int x : v) cout << x << " ";
+
+// Reverse iteration
+for (auto it = v.rbegin(); it != v.rend(); ++it) {
+    cout << *it << " ";
+}
+```
+
+### Common STL Algorithms
+
+Include `<algorithm>` and `<numeric>`. Algorithms operate on iterator ranges `[begin, end)`.
+
+| Algorithm | Description | Example |
+|-----------|-------------|---------|
+| `sort(b, e)` | Sort range ascending | `sort(v.begin(), v.end())` |
+| `sort(b, e, cmp)` | Sort with custom comparator | `sort(v.begin(), v.end(), greater<int>())` |
+| `find(b, e, val)` | Find first occurrence | `auto it = find(v.begin(), v.end(), 42)` |
+| `count(b, e, val)` | Count occurrences | `int n = count(v.begin(), v.end(), 0)` |
+| `reverse(b, e)` | Reverse range in place | `reverse(v.begin(), v.end())` |
+| `accumulate(b, e, init)` | Sum of range (`<numeric>`) | `int sum = accumulate(v.begin(), v.end(), 0)` |
+| `transform(b, e, out, fn)` | Apply function to each element | `transform(v.begin(), v.end(), v.begin(), [](int x){ return x*2; })` |
+| `remove_if(b, e, pred)` | Move non-matching to front | `auto it = remove_if(v.begin(), v.end(), [](int x){ return x < 0; })` |
+| `unique(b, e)` | Remove consecutive duplicates | `auto it = unique(v.begin(), v.end())` |
+| `binary_search(b, e, val)` | Check if value exists (sorted) | `bool found = binary_search(v.begin(), v.end(), 42)` |
+| `min_element(b, e)` | Iterator to smallest element | `auto it = min_element(v.begin(), v.end())` |
+| `max_element(b, e)` | Iterator to largest element | `auto it = max_element(v.begin(), v.end())` |
+| `for_each(b, e, fn)` | Apply function to each element | `for_each(v.begin(), v.end(), [](int x){ cout << x; })` |
+
+```cpp
+#include <algorithm>
+#include <numeric>
+
+vector<int> v = {5, 2, 8, 1, 9, 3};
+
+sort(v.begin(), v.end());          // {1, 2, 3, 5, 8, 9}
+reverse(v.begin(), v.end());       // {9, 8, 5, 3, 2, 1}
+
+int sum = accumulate(v.begin(), v.end(), 0);   // 28
+auto it = find(v.begin(), v.end(), 5);         // iterator to 5
+bool has3 = binary_search(v.begin(), v.end(), 3);  // requires sorted
+
+// Erase-remove idiom
+v.erase(remove_if(v.begin(), v.end(),
+    [](int x) { return x < 3; }), v.end());
+```
+
+<SourceRef section="STL Algorithms" quote="cppreference.com" />
+
+## Type Casting
+
+C++ provides four named cast operators that replace C-style casts with explicit intent.
+
+| Cast | Purpose |
+|------|---------|
+| `static_cast<T>` | Compile-time conversions between compatible types |
+| `dynamic_cast<T>` | Safe downcasting in class hierarchies (requires virtual functions) |
+| `const_cast<T>` | Add or remove `const` qualifier |
+| `reinterpret_cast<T>` | Bit-level reinterpretation between unrelated types |
+
+```cpp
+// static_cast — numeric conversion
+double pi = 3.14;
+int n = static_cast<int>(pi);  // 3
+
+// dynamic_cast — safe downcast
+class Base { public: virtual ~Base() {} };
+class Derived : public Base { public: void hello() {} };
+
+Base* b = new Derived();
+Derived* d = dynamic_cast<Derived*>(b);  // succeeds
+if (d) d->hello();
+delete b;
+
+// const_cast — remove const
+const int val = 10;
+int* mutable_ptr = const_cast<int*>(&val);
+
+// reinterpret_cast — raw reinterpretation
+int x = 42;
+void* vp = reinterpret_cast<void*>(&x);
+```
+
+<SourceRef section="Type Casting" quote="cppreference.com" />
+
+## Namespaces
+
+**Namespaces** group related declarations under a named scope to prevent name collisions.
+
+```cpp
+namespace Math {
+    const double PI = 3.14159265;
+    double square(double x) { return x * x; }
+}
+
+// Qualified access
+cout << Math::PI;
+cout << Math::square(5);
+
+// Using directive — brings all names into scope
+using namespace Math;
+cout << PI;
+
+// Using declaration — brings a single name into scope
+using Math::square;
+cout << square(3);
+```
+
+<SourceRef section="Namespaces" quote="cppreference.com" />
+
+## Preprocessor Directives
+
+The **preprocessor** processes source files before compilation. Directives start with `#`.
+
+| Directive | Purpose |
+|-----------|---------|
+| `#include <file>` | Include a standard header |
+| `#include "file"` | Include a local header |
+| `#define NAME value` | Define a macro constant |
+| `#define F(x) expr` | Define a function-like macro |
+| `#ifdef NAME` | Compile block if `NAME` is defined |
+| `#ifndef NAME` | Compile block if `NAME` is not defined |
+| `#endif` | End conditional compilation block |
+| `#pragma once` | Include guard (non-standard but widely supported) |
+
+```cpp
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#define MAX_SIZE 100
+#define SQUARE(x) ((x) * (x))
+
+#ifdef DEBUG
+    #define LOG(msg) cout << msg << endl
+#else
+    #define LOG(msg)
+#endif
+
+#endif
+```
+
+<SourceRef section="Preprocessor Directives" quote="cppreference.com" />
+
+## auto and Type Deduction
+
+The **`auto`** keyword (C++11) lets the compiler deduce a variable's type from its initializer.
+
+```cpp
+auto x = 42;          // int
+auto pi = 3.14;       // double
+auto name = "hello"s; // std::string (with using namespace std::string_literals)
+auto v = vector<int>{1, 2, 3};
+
+// With iterators — avoids verbose type names
+map<string, vector<int>> data;
+for (auto& [key, values] : data) {   // structured binding (C++17)
+    for (auto val : values) {
+        cout << key << ": " << val << endl;
+    }
+}
+```
+
+### Structured Bindings (C++17)
+
+Decompose structs, pairs, tuples, and arrays into named variables.
+
+```cpp
+pair<string, int> p = {"Alice", 30};
+auto [name, age] = p;
+
+map<string, int> scores = {{"A", 90}, {"B", 80}};
+for (auto& [name, score] : scores)
+    cout << name << ": " << score << endl;
+
+auto [x, y, z] = tuple{1, 2.0, "three"};
+```
+
+<SourceRef section="auto" quote="cppreference.com" />
+
+## Modern C++ Features
+
+### std::optional (C++17)
+
+Represents a value that may or may not be present. Replaces the "return -1 or nullptr on failure" pattern.
+
+```cpp
+#include <optional>
+
+optional<int> findIndex(const vector<int>& v, int target) {
+    for (int i = 0; i < v.size(); i++)
+        if (v[i] == target) return i;
+    return nullopt;
+}
+
+auto idx = findIndex({10, 20, 30}, 20);
+if (idx) cout << "Found at " << *idx;    // Found at 1
+cout << idx.value_or(-1);                 // 1
+```
+
+### std::variant (C++17)
+
+A type-safe union that holds one of several types.
+
+```cpp
+#include <variant>
+
+variant<int, double, string> val = "hello";
+cout << get<string>(val);  // hello
+
+val = 42;
+cout << get<int>(val);     // 42
+
+// Visit pattern
+visit([](auto&& arg) { cout << arg; }, val);
+```
+
+### std::any (C++17)
+
+Holds any type — like `void*` but type-safe.
+
+```cpp
+#include <any>
+
+any a = 42;
+cout << any_cast<int>(a);  // 42
+a = string("hello");
+cout << any_cast<string>(a);  // hello
+```
+
+### std::string_view (C++17)
+
+A lightweight, non-owning reference to a string. Avoids copies when you only need to read.
+
+```cpp
+#include <string_view>
+
+void print(string_view sv) {    // accepts string, const char*, string_view
+    cout << sv << " (" << sv.size() << " chars)" << endl;
+}
+
+print("hello");                  // no allocation
+string s = "world";
+print(s);                        // no copy
+print(string_view(s).substr(0, 3));  // "wor", no allocation
+```
+
+### std::function and Callbacks
+
+`std::function` is a general-purpose function wrapper that can hold any callable.
+
+```cpp
+#include <functional>
+
+function<int(int, int)> op;
+
+op = [](int a, int b) { return a + b; };
+cout << op(3, 4);  // 7
+
+op = [](int a, int b) { return a * b; };
+cout << op(3, 4);  // 12
+
+// As callback parameter
+void repeat(int n, function<void()> fn) {
+    for (int i = 0; i < n; i++) fn();
+}
+repeat(3, []() { cout << "Hi "; });  // Hi Hi Hi
+```
+
+<SourceRef section="Modern C++ Features" quote="cppreference.com" />
+
+## Multithreading
+
+C++11 introduced built-in threading support in `<thread>`, `<mutex>`, and `<future>`.
+
+### Creating Threads
+
+```cpp
+#include <thread>
+
+void work(int id) {
+    cout << "Thread " << id << " running" << endl;
+}
+
+thread t1(work, 1);
+thread t2(work, 2);
+t1.join();  // wait for t1 to finish
+t2.join();  // wait for t2 to finish
+```
+
+### Mutex and Lock Guard
+
+A **mutex** prevents data races when multiple threads access shared data. **`lock_guard`** locks the mutex on construction and unlocks on destruction (RAII).
+
+```cpp
+#include <mutex>
+
+mutex mtx;
+int counter = 0;
+
+void increment(int times) {
+    for (int i = 0; i < times; i++) {
+        lock_guard<mutex> lock(mtx);  // automatically unlocks at scope end
+        counter++;
+    }
+}
+
+thread t1(increment, 10000);
+thread t2(increment, 10000);
+t1.join(); t2.join();
+cout << counter;  // 20000 (guaranteed correct)
+```
+
+### async and future
+
+`std::async` runs a function asynchronously and returns a `future` representing the result.
+
+```cpp
+#include <future>
+
+future<int> result = async(launch::async, []() {
+    // expensive computation
+    return 42;
+});
+
+cout << result.get();  // blocks until ready, returns 42
+```
+
+### Thread-safe Summary
+
+| Primitive | Header | Purpose |
+|-----------|--------|---------|
+| `thread` | `<thread>` | Run function in a new thread |
+| `mutex` | `<mutex>` | Mutual exclusion lock |
+| `lock_guard<mutex>` | `<mutex>` | RAII mutex lock |
+| `unique_lock<mutex>` | `<mutex>` | Flexible RAII lock (supports deferring, unlocking) |
+| `condition_variable` | `<condition_variable>` | Block thread until notified |
+| `async` | `<future>` | Launch async task |
+| `future<T>` | `<future>` | Retrieve result of async task |
+| `atomic<T>` | `<atomic>` | Lock-free thread-safe variable |
+
+```cpp
+#include <atomic>
+atomic<int> counter{0};
+// safe to increment from multiple threads without a mutex
+counter.fetch_add(1);
+```
+
+<SourceRef section="Multithreading" quote="cppreference.com" />
+
+## Command Line Arguments
+
+```cpp
+int main(int argc, char* argv[]) {
+    cout << "Program: " << argv[0] << endl;
+    for (int i = 1; i < argc; i++) {
+        cout << "Arg " << i << ": " << argv[i] << endl;
+    }
+    return 0;
+}
+```
+
+`argc` is the argument count (including the program name). `argv` is an array of C-strings.
+
+```bash
+./app hello world
+# Program: ./app
+# Arg 1: hello
+# Arg 2: world
+```
+
+<SourceRef section="Command Line Arguments" quote="cppreference.com" />
+
+## File Handling
+
+C++ performs file operations through the `<fstream>` library. Two primary classes handle file I/O: **`ofstream`** for writing to files and **`ifstream`** for reading from files.
+
+```cpp
+#include <fstream>
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    // Writing to a file
+    ofstream outputFile("example.txt");
+    if (outputFile.is_open()) {
+        outputFile << "Hello, World!" << endl;
+        outputFile << 42 << endl;
+        outputFile.close();
+    }
+
+    // Reading from a file
+    ifstream inputFile("example.txt");
+    if (inputFile.is_open()) {
+        string line;
+        while (getline(inputFile, line)) {
+            cout << line << endl;
+        }
+        inputFile.close();
+    }
+
+    return 0;
+}
+```
+
+Key file operations:
+
+| Operation | Description |
+|-----------|-------------|
+| `open(filename)` | Opens a file |
+| `is_open()` | Checks if the file was opened successfully |
+| `close()` | Closes the file |
+| `getline(stream, str)` | Reads a line into a string |
+| `<<` operator | Writes data to the file |
+
+<SourceRef section="File Handling" />
+
+## Source & Further Reading
+
+<SourceCard
+  title="C++ Language Reference"
+  description="A comprehensive reference combining cppreference.com, the ISO C++ standard, and community resources."
+  links={[
+    { label: "C++ Reference — cppreference.com", href: "https://en.cppreference.com/w/" },
+    { label: "C++ Standard Library Headers", href: "https://en.cppreference.com/w/cpp/header" },
+    { label: "ISO C++ Standard", href: "https://isocpp.org/" },
+    { label: "C++ Core Guidelines", href: "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines" },
+    { label: "C++ Cheatsheet — GeeksforGeeks", href: "https://www.geeksforgeeks.org/cpp/cpp-cheatsheet/" }
+  ]}
+/>
