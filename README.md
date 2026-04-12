@@ -1,49 +1,104 @@
-# Starlight Starter Kit: Basics
+<p align="center">
+  <a href="https://yarikleto.github.io/pretty-docs/">
+    <img src="public/readme-banner.svg" alt="Pretty Docs — specs rewritten for humans" width="100%">
+  </a>
+</p>
 
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
+<p align="center">
+  <strong>Old docs are ugly. These aren't.</strong>
+</p>
+
+Pretty Docs rewrites dense technical specifications — RFCs, man pages, standards — into clear, visual, well-sourced articles. Every claim cites the original spec. Every article is a companion to the original, not a replacement.
+
+**[Browse articles](https://yarikleto.github.io/pretty-docs/)** | **[Contribute](https://yarikleto.github.io/pretty-docs/contributing/write-an-article/)**
+
+---
+
+### Before & After
+
+<table>
+<tr>
+<th width="50%">Original RFC</th>
+<th width="50%">Pretty Docs</th>
+</tr>
+<tr>
+<td>
 
 ```
-npm create astro@latest -- --template starlight
+3.1.1.  DATA TYPES
+
+   Data representations are handled in FTP
+   by a user specifying a representation
+   type.  This type may implicitly (as in
+   ASCII or EBCDIC) or explicitly (as in
+   Local byte) define a byte size for
+   interpretation which is referred to as
+   the "transfer byte size"...
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+</td>
+<td>
 
-## 🚀 Project Structure
+FTP handles data in three independent dimensions: **type** controls interpretation (ASCII, Image, EBCDIC, Local), **structure** defines the layout (File, Record, Page), and **mode** determines how bytes travel over the wire (Stream, Block, Compressed).
 
-Inside of your Astro + Starlight project, you'll see the following folders and files:
+*<sub>Source: RFC 959, Section 3.1</sub>*
+
+</td>
+</tr>
+</table>
+
+---
+
+## Tech Stack
+
+- [Astro](https://astro.build) + [Starlight](https://starlight.astro.build) static site
+- MDX articles with custom citation components
+- SVG diagrams with light/dark mode support
+- [Pagefind](https://pagefind.app) for full-text search
+- Zero backend, zero database
+
+## Quick Start
+
+```bash
+git clone https://github.com/yarikleto/pretty-docs.git
+cd pretty-docs
+npm install
+npm run build && npm run preview
+```
+
+Open [localhost:4321](http://localhost:4321) to view the site.
+
+> `npm run dev` works for editing, but search requires a production build — use `build` + `preview` to test search.
+
+## Project Structure
 
 ```
-.
-├── public/
-├── src/
-│   ├── assets/
-│   ├── content/
-│   │   └── docs/
-│   └── content.config.ts
-├── astro.config.mjs
-├── package.json
-└── tsconfig.json
+src/
+  content/docs/            # Articles (MDX)
+  components/
+    article/               # SourceRef, RfcToggle, SourceCard, etc.
+    diagrams/              # SVG diagram components
+    landing/               # Landing page components
+  styles/custom.css        # Starlight CSS overrides
+astro.config.mjs           # Sidebar, navigation
 ```
 
-Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory. Each file is exposed as a route based on its file name.
+## Contributing
 
-Images can be added to `src/assets/` and embedded in Markdown with a relative link.
+We'd love more articles. The contribution guide covers everything:
 
-Static assets, like favicons, can be placed in the `public/` directory.
+**[How to write an article](https://yarikleto.github.io/pretty-docs/contributing/write-an-article/)**
 
-## 🧞 Commands
+The short version:
 
-All commands are run from the root of the project, from a terminal:
+1. Pick a spec (RFC, man page, standard)
+2. Create an MDX file — the file path mirrors the source URL
+3. Write clear prose, cite every technical claim
+4. Add diagrams where they help
+5. Submit a PR
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+See the [style guide](https://yarikleto.github.io/pretty-docs/contributing/style-guide/) for tone, formatting, and component usage.
 
-## 👀 Want to learn more?
+## License
 
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
+Content is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Code is [MIT](https://opensource.org/licenses/MIT).
