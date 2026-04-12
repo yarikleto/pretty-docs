@@ -95,6 +95,11 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
         }
       });
 
+      // Allow external triggers (e.g. hero search bar) to open the modal
+      window.addEventListener('open-search', () => {
+        if (!dialog.open) openModal();
+      });
+
       // Load Pagefind on idle
       window.addEventListener('DOMContentLoaded', () => {
         if (import.meta.env.DEV) return;
@@ -223,6 +228,8 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
     background: #1a1b26;
     border-color: #2e3150;
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+    /* Landing page doesn't inherit white text in dark mode like Starlight does */
+    color: #e4e6f0;
   }
 
   /* ---- Dialog frame ---- */
@@ -287,6 +294,10 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
   #starlight__search .pagefind-ui__search-input {
     color: #212529;
     font-weight: 400;
+    /* Explicit padding-left for the magnifying glass icon.
+       Pagefind sets this via layered CSS, but on the landing page
+       the layer cascade has lower priority, causing overlap. */
+    padding-left: calc(54px * var(--pagefind-ui-scale, 0.8));
   }
   :root[data-theme='dark'] #starlight__search .pagefind-ui__search-input {
     color: #e4e6f0;
@@ -296,6 +307,9 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
   }
   :root[data-theme='dark'] #starlight__search input:focus {
     --pagefind-ui-border: #748ffc;
+  }
+  #starlight__search .pagefind-ui__search-input:focus {
+    outline: none;
   }
 
   /* ---- Clear button ---- */

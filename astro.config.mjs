@@ -24,7 +24,9 @@ export default defineConfig({
 			sidebar: [
 				{
 					label: 'Networking',
-					autogenerate: { directory: 'networking' },
+					items: [
+						{ label: 'FTP Data Transfer', slug: 'w3.org/Protocols/rfc959' },
+					],
 				},
 				{
 					label: 'Contributing',

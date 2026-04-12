@@ -24,10 +24,11 @@ import Search from '../Search.astro';
       <span class="landing-nav-logo-text">Pretty Docs</span>
     </a>
 
-    <!-- Right side: search + links + GitHub + theme toggle -->
+    <!-- Right side: links + GitHub + theme toggle -->
+    <!-- Search component is hidden in nav (hero has the visible search bar) but still renders the dialog + Pagefind UI -->
+    <div class="landing-nav-search-hidden"><Search /></div>
     <div class="landing-nav-actions">
-      <Search />
-      <a href={`${import.meta.env.BASE_URL}/networking/ftp-data-transfer/`} class="landing-nav-link">Articles</a>
+      <a href={`${import.meta.env.BASE_URL}/w3.org/Protocols/rfc959/`} class="landing-nav-link">Articles</a>
       <a href={`${import.meta.env.BASE_URL}/contributing/write-an-article/`} class="landing-nav-link">Contribute</a>
       <a
         href="https://github.com/yarikleto/pretty-docs"
@@ -149,6 +150,22 @@ import Search from '../Search.astro';
     font-weight: 600;
     color: var(--surface-900);
     letter-spacing: -0.025em;
+  }
+
+  /* --- Hidden search (keeps dialog + Pagefind, hides trigger button) --- */
+  .landing-nav-search-hidden {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .landing-nav-search-hidden :global(site-search button[data-open-modal]) {
+    display: none;
+  }
+  /* Allow the dialog itself to be interactive */
+  .landing-nav-search-hidden :global(site-search dialog) {
+    pointer-events: auto;
   }
 
   /* --- Right actions --- */
