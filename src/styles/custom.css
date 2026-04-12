@@ -516,27 +516,21 @@ code:not(pre code) {
 }
 
 /* ========================================
-   10. Pagefind Search Modal Overrides
+   10. Search Modal Overrides
    ======================================== */
 
-/* Override Pagefind's CSS variables to match Pretty Docs design tokens */
+/* Pagefind Component UI variables (new Pagefind version) */
 :root {
   --pf-text: #212529;
   --pf-text-secondary: #495057;
   --pf-text-muted: #868e96;
-  --pf-background: #ffffff;
+  --pf-background: #fff;
   --pf-border: #e9ecef;
   --pf-border-focus: #4c6ef5;
-  --pf-skeleton: #f1f3f5;
-  --pf-skeleton-shine: #fafbfc;
   --pf-hover: #f0f4ff;
   --pf-mark: #4c6ef5;
-  --pf-scroll-shadow: rgba(0, 0, 0, 0.06);
-  --pf-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --pf-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
-  --pf-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
   --pf-outline-focus: #4c6ef5;
-  --pf-font: 'Inter', system-ui, -apple-system, sans-serif;
+  --pf-font: 'Inter', system-ui, sans-serif;
 }
 
 :root[data-theme='dark'] {
@@ -546,15 +540,107 @@ code:not(pre code) {
   --pf-background: #1f2133;
   --pf-border: #2e3150;
   --pf-border-focus: #748ffc;
-  --pf-skeleton: #252740;
-  --pf-skeleton-shine: #2e3150;
   --pf-hover: rgba(76, 110, 245, 0.1);
   --pf-mark: #748ffc;
-  --pf-scroll-shadow: rgba(0, 0, 0, 0.2);
-  --pf-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.4);
   --pf-outline-focus: #748ffc;
-  --pf-error-bg: rgba(250, 82, 82, 0.1);
-  --pf-error-border: #2e3150;
-  --pf-error-text: #ff6b6b;
-  --pf-error-text-secondary: #fa5252;
+}
+
+/* Starlight search dialog — backdrop and frame */
+site-search dialog {
+  background-color: #fff;
+  border-color: #e9ecef;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+}
+
+:root[data-theme='dark'] site-search dialog {
+  background-color: #1a1b26;
+  border-color: #2e3150;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+site-search dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+}
+
+/* Starlight Pagefind UI overrides — uses --pagefind-ui-* variables */
+#starlight__search {
+  --pagefind-ui-primary: #4c6ef5;
+  --pagefind-ui-text: #212529;
+  --pagefind-ui-background: #fff;
+  --pagefind-ui-border: #e9ecef;
+  --pagefind-ui-border-width: 1px;
+  --pagefind-ui-border-radius: 8px;
+  --pagefind-ui-scale: 0.85;
+  --pagefind-ui-tag: #f1f3f5;
+}
+
+:root[data-theme='dark'] #starlight__search {
+  --pagefind-ui-primary: #748ffc;
+  --pagefind-ui-text: #e4e6f0;
+  --pagefind-ui-background: #1f2133;
+  --pagefind-ui-border: #2e3150;
+  --pagefind-ui-tag: #252740;
+}
+
+/* Search input: rounded, proper focus ring */
+#starlight__search .pagefind-ui__search-input {
+  border-radius: 8px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 400;
+}
+
+#starlight__search input:focus {
+  --pagefind-ui-border: #4c6ef5;
+  outline: 2px solid #4c6ef5;
+  outline-offset: -1px;
+}
+
+:root[data-theme='dark'] #starlight__search input:focus {
+  --pagefind-ui-border: #748ffc;
+  outline-color: #748ffc;
+}
+
+/* Search results: clean typography */
+#starlight__search .pagefind-ui__result-title,
+#starlight__search [data-result] .pagefind-ui__result-title {
+  font-weight: 600;
+  color: #212529;
+}
+
+:root[data-theme='dark'] #starlight__search .pagefind-ui__result-title,
+:root[data-theme='dark'] #starlight__search [data-result] .pagefind-ui__result-title {
+  color: #e4e6f0;
+}
+
+#starlight__search .pagefind-ui__result-excerpt {
+  font-size: 0.8125rem;
+  color: #868e96;
+  line-height: 1.5;
+}
+
+:root[data-theme='dark'] #starlight__search .pagefind-ui__result-excerpt {
+  color: #6b6e82;
+}
+
+/* Highlight matching text in results */
+#starlight__search mark {
+  background: #f0f4ff;
+  color: #4c6ef5;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+:root[data-theme='dark'] #starlight__search mark {
+  background: rgba(76, 110, 245, 0.15);
+  color: #91a7ff;
+}
+
+/* Result hover state */
+#starlight__search .pagefind-ui__result:hover {
+  background: #f0f4ff;
+}
+
+:root[data-theme='dark'] #starlight__search .pagefind-ui__result:hover {
+  background: rgba(76, 110, 245, 0.08);
 }
