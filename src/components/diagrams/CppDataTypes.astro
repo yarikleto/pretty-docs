@@ -1,0 +1,147 @@
+---
+/**
+ * CppDataTypes — SVG diagram: C++ fundamental data types.
+ *
+ * Shows the six fundamental data types (int, float, double, char, bool, string)
+ * as a 2x3 grid of colored cards with type name, size, and example value.
+ *
+ * Grouped by category:
+ *   Row 1: Numeric types (int, float, double) — indigo
+ *   Row 2: Text/Logic types (char, bool, string) — green/amber
+ *
+ * Dark mode adaptation uses CSS classes defined in custom.css section 8:
+ *   .axis-card, .axis-card-text, .axis-card-sub
+ * Plus scoped styles below for the container.
+ */
+---
+
+<div class="diagram-wrapper cpp-data-types">
+  <svg viewBox="0 0 700 280" class="cpp-data-types-svg" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="cdt-numericGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#4c6ef5" stop-opacity="0.1"/>
+        <stop offset="100%" stop-color="#4c6ef5" stop-opacity="0.03"/>
+      </linearGradient>
+      <linearGradient id="cdt-textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#37b24d" stop-opacity="0.1"/>
+        <stop offset="100%" stop-color="#37b24d" stop-opacity="0.03"/>
+      </linearGradient>
+      <linearGradient id="cdt-numericGradDark" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#4c6ef5" stop-opacity="0.15"/>
+        <stop offset="100%" stop-color="#4c6ef5" stop-opacity="0.05"/>
+      </linearGradient>
+      <linearGradient id="cdt-textGradDark" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#37b24d" stop-opacity="0.15"/>
+        <stop offset="100%" stop-color="#37b24d" stop-opacity="0.05"/>
+      </linearGradient>
+    </defs>
+
+    {/* Row 1: Numeric types (indigo) */}
+    <rect class="cdt-row cdt-row-numeric" x="20" y="20" width="660" height="110" rx="12"
+          fill="url(#cdt-numericGrad)" stroke="#bac8ff" stroke-width="1"/>
+    <text x="46" y="45" font-size="11" font-weight="700" fill="#4263eb"
+          letter-spacing="0.08em">NUMERIC</text>
+    <text x="46" y="62" font-size="10" fill="#748ffc">Whole numbers &amp; decimals</text>
+
+    {/* int card */}
+    <rect class="axis-card" x="150" y="32" width="150" height="84" rx="8"
+          fill="white" stroke="#dbe4ff" stroke-width="1"/>
+    <text class="axis-card-text" x="225" y="56" font-size="14" font-weight="700"
+          fill="#212529" text-anchor="middle">int</text>
+    <text class="axis-card-sub" x="225" y="74" font-size="11"
+          fill="#868e96" text-anchor="middle">4 bytes</text>
+    <text x="225" y="100" font-size="11" font-weight="500"
+          fill="#4c6ef5" text-anchor="middle" font-family="'JetBrains Mono', monospace">10, -5, 0</text>
+
+    {/* float card */}
+    <rect class="axis-card" x="320" y="32" width="150" height="84" rx="8"
+          fill="white" stroke="#dbe4ff" stroke-width="1"/>
+    <text class="axis-card-text" x="395" y="56" font-size="14" font-weight="700"
+          fill="#212529" text-anchor="middle">float</text>
+    <text class="axis-card-sub" x="395" y="74" font-size="11"
+          fill="#868e96" text-anchor="middle">4 bytes</text>
+    <text x="395" y="100" font-size="11" font-weight="500"
+          fill="#4c6ef5" text-anchor="middle" font-family="'JetBrains Mono', monospace">3.14f</text>
+
+    {/* double card */}
+    <rect class="axis-card" x="490" y="32" width="150" height="84" rx="8"
+          fill="white" stroke="#dbe4ff" stroke-width="1"/>
+    <text class="axis-card-text" x="565" y="56" font-size="14" font-weight="700"
+          fill="#212529" text-anchor="middle">double</text>
+    <text class="axis-card-sub" x="565" y="74" font-size="11"
+          fill="#868e96" text-anchor="middle">8 bytes</text>
+    <text x="565" y="100" font-size="11" font-weight="500"
+          fill="#4c6ef5" text-anchor="middle" font-family="'JetBrains Mono', monospace">3.14159</text>
+
+    {/* Row 2: Text & Logic types (green) */}
+    <rect class="cdt-row cdt-row-text" x="20" y="148" width="660" height="110" rx="12"
+          fill="url(#cdt-textGrad)" stroke="#b2f2bb" stroke-width="1"/>
+    <text x="46" y="173" font-size="11" font-weight="700" fill="#2b8a3e"
+          letter-spacing="0.08em">TEXT &amp; LOGIC</text>
+    <text x="46" y="190" font-size="10" fill="#51cf66">Characters, booleans &amp; strings</text>
+
+    {/* char card */}
+    <rect class="axis-card" x="150" y="160" width="150" height="84" rx="8"
+          fill="white" stroke="#b2f2bb" stroke-width="1"/>
+    <text class="axis-card-text" x="225" y="184" font-size="14" font-weight="700"
+          fill="#212529" text-anchor="middle">char</text>
+    <text class="axis-card-sub" x="225" y="202" font-size="11"
+          fill="#868e96" text-anchor="middle">1 byte</text>
+    <text x="225" y="228" font-size="11" font-weight="500"
+          fill="#37b24d" text-anchor="middle" font-family="'JetBrains Mono', monospace">'A', 'b'</text>
+
+    {/* bool card */}
+    <rect class="axis-card" x="320" y="160" width="150" height="84" rx="8"
+          fill="white" stroke="#b2f2bb" stroke-width="1"/>
+    <text class="axis-card-text" x="395" y="184" font-size="14" font-weight="700"
+          fill="#212529" text-anchor="middle">bool</text>
+    <text class="axis-card-sub" x="395" y="202" font-size="11"
+          fill="#868e96" text-anchor="middle">1 byte</text>
+    <text x="395" y="228" font-size="11" font-weight="500"
+          fill="#37b24d" text-anchor="middle" font-family="'JetBrains Mono', monospace">true, false</text>
+
+    {/* string card */}
+    <rect class="axis-card" x="490" y="160" width="150" height="84" rx="8"
+          fill="white" stroke="#b2f2bb" stroke-width="1"/>
+    <text class="axis-card-text" x="565" y="184" font-size="14" font-weight="700"
+          fill="#212529" text-anchor="middle">string</text>
+    <text class="axis-card-sub" x="565" y="202" font-size="11"
+          fill="#868e96" text-anchor="middle">Variable</text>
+    <text x="565" y="228" font-size="11" font-weight="500"
+          fill="#37b24d" text-anchor="middle" font-family="'JetBrains Mono', monospace">"Hello"</text>
+  </svg>
+</div>
+
+<style>
+  .diagram-wrapper.cpp-data-types {
+    background-color: #fafbfc;
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .cpp-data-types-svg {
+    width: 100%;
+    display: block;
+  }
+
+  .cpp-data-types-svg text {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  :root[data-theme='dark'] .diagram-wrapper.cpp-data-types {
+    background-color: #1f2133;
+  }
+
+  :root[data-theme='dark'] .cdt-row {
+    stroke-opacity: 0.3;
+  }
+
+  :root[data-theme='dark'] .cdt-row-numeric {
+    fill: url(#cdt-numericGradDark);
+  }
+
+  :root[data-theme='dark'] .cdt-row-text {
+    fill: url(#cdt-textGradDark);
+  }
+</style>
