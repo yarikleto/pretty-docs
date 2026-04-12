@@ -3,10 +3,7 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 
 export default defineConfig({
-	// TODO: set your domain here. For GitHub Pages project site use:
-	// site: 'https://yourdomain.github.io', base: '/pretty-docs'
-	// For custom domain: site: 'https://prettydocs.dev' (no base needed)
-	site: 'https://example.com',
+	site: 'https://yarikleto.github.io',
 	base: '/pretty-docs',
 	integrations: [
 		starlight({
