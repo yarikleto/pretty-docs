@@ -13,6 +13,8 @@ import SourceCard from '../../../components/article/SourceCard.astro';
 import RfcToggle from '../../../components/article/RfcToggle.astro';
 import StructureCard from '../../../components/article/StructureCard.astro';
 import ThreeDimensions from '../../../components/diagrams/ThreeDimensions.astro';
+import BlockHeader from '../../../components/diagrams/BlockHeader.astro';
+import FtpSession from '../../../components/article/FtpSession.astro';
 
 <ArticleMeta
   source="RFC 959, Section 3"
@@ -148,4 +150,149 @@ The `STRU` command sets the structure before a transfer. Most modern transfers u
 
 The key insight is that **structure and type are independent**. You can transfer ASCII text in Record structure (common on mainframes that store text files as records) or Image data in File structure (the typical modern case). The three structure options exist not because FTP was over-designed, but because the protocol had to accommodate fundamentally different ideas about what a "file" is.
 
-{/* ----- Transfer Modes section will be added in TASK-020 ----- */}
+## Transfer Modes
+
+Transfer modes answer the final question: **how do we ship the data?** The data type says what the bytes mean, the structure says how they are organized, and the mode says how they are packaged for transmission over the data connection. The `MODE` command selects one of three options before a transfer begins.
+
+### Stream Mode
+
+**Stream mode** is the default and by far the most common. Data is transmitted as a plain stream of bytes with no framing added by FTP itself. The end of a file is signaled by the sender closing the data connection — simple and efficient.
+
+For File structure, closing the connection is all that is needed to mark the end. For Record structure, a two-byte control code (0xFF followed by a descriptor byte) is inserted into the stream to mark end-of-record (EOR) and end-of-file (EOF) boundaries. If the actual data contains 0xFF, it is escaped by sending 0xFF twice.
+
+Stream mode is efficient because it adds **zero overhead** for the most common case (File structure transfers). There are no headers, no block boundaries, no compression — just raw data flowing from sender to receiver. The downside is that if the connection drops mid-transfer, there is no way to know how much data was lost or to resume from where it left off.
+
+<SourceRef section="3.4.1" quote="The data is transmitted as a stream of bytes." />
+
+### Block Mode
+
+**Block mode** wraps the data in a series of blocks, each preceded by a three-byte header. This header tells the receiver exactly how many data bytes follow and provides flags that describe the block's role in the transfer.
+
+<BlockHeader />
+
+The **descriptor byte** uses individual bits as flags:
+
+| Bit Value | Flag | Meaning |
+|-----------|------|---------|
+| 128 (0x80) | EOR | End of record — this block is the last in the current record |
+| 64 (0x40) | EOF | End of file — this block is the last in the file |
+| 32 (0x20) | Errors | Suspected errors in the data (the block may be unreliable) |
+| 16 (0x10) | Restart | This block contains a restart marker, not file data |
+
+:::caution[Important]
+These values are **bit flags**, not mutually exclusive enums. They combine by addition (or bitwise OR). A descriptor value of **192** means both EOR and EOF are set (128 + 64) — the block is simultaneously the last in its record and the last in the file. The remaining bits (8, 4, 2, 1) are reserved and should be zero.
+:::
+
+The **byte count** (16 bits) gives the exact number of data bytes following the header, allowing the receiver to find the next block header without scanning the data. This makes block mode **restartable** — if a transfer fails, the restart marker flag lets the sender insert checkpoint information that both sides can use to resume from a known point rather than starting over.
+
+<SourceRef section="3.4.2" quote="The block header consists of the count field, and descriptor code." />
+
+<RfcToggle section="3.4.2" label="See original RFC text for Block Mode">
+{`   3.4.2.  BLOCK MODE
+
+      The file is transmitted as a series of data blocks preceded by
+      one or more header bytes.  The header bytes contain a count
+      field, and descriptor code.  The count field indicates the
+      total length of the data block in bytes, thus marking the
+      beginning of the next data block (there are no filler bits).
+      The descriptor code defines:  last block in the file (EOF)
+      end of record (EOR), restart marker (see the Section on
+      Error Recovery and Restart) and suspected errors in data
+      block.
+
+      The data header consists of three bytes.  Of the 24 bits of
+      header information, the 16 low order bits shall represent
+      byte count, and the 8 high order bits shall represent
+      descriptor codes as shown below.
+
+         Block Header
+
+            +----------------+----------------+----------------+
+            | Descriptor     |    Byte Count                   |
+            |         8 bits |                      16 bits    |
+            +----------------+----------------+----------------+
+
+         The descriptor codes are indicated by bit flags in the
+         descriptor byte.  Four codes have been assigned, where
+         each code number is the decimal value of the
+         corresponding bit in the byte.
+
+            Code     Meaning
+
+             128     End of data block is EOR
+              64     End of data block is EOF
+              32     Suspected errors in data block
+              16     Data block is a restart marker
+
+         With this encoding, more than one descriptor coded
+         condition may exist for a particular block.  As many bits
+         as necessary may be flagged.
+
+         The restart marker is embedded in the data stream as an
+         integral number of 8-bit bytes representing printable
+         characters in the language being used over the control
+         connection (e.g., default--NVT-ASCII).`}
+</RfcToggle>
+
+### Compressed Mode
+
+**Compressed mode** applies a simple run-length encoding scheme to reduce the amount of data transmitted. It is defined in the RFC but rarely used in practice — modern file compression (gzip, zlib) is far more effective and is typically applied before transfer, not during it.
+
+The compression scheme encodes data bytes into three types of output:
+
+1. **Regular data** — a byte with bit 7 clear and bits 6-0 giving a count (1-127), followed by that many data bytes transmitted verbatim. This is used for sequences of non-repeating data.
+2. **Replicated data** — a byte with bit 7 set and bit 6 clear, where bits 5-0 give the repeat count, followed by a single data byte to be replicated that many times. This compresses runs of identical bytes (e.g., long strings of spaces or null bytes).
+3. **Filler bytes** — a byte with bits 7 and 6 both set, where bits 5-0 give a count of filler bytes to insert. The filler character depends on the data type (zero for Image, space for ASCII/EBCDIC).
+
+Like block mode, compressed mode uses a two-byte control sequence to mark EOR and EOF boundaries within the stream.
+
+<SourceRef section="3.4.3" quote="There are three kinds of information to be sent: regular data, in a byte string; compressed data, consisting of replications or filler; and control information." />
+
+## Example Session
+
+Putting it all together — here is what a typical FTP data transfer looks like on the wire. The client connects, authenticates, sets the transfer type to binary (Image), enters passive mode, and retrieves a file.
+
+<FtpSession title="FTP Session" context="Control connection (port 21)">
+<span class="syn-comment"># Client connects to FTP server</span>
+<span class="syn-response">220 ftp.example.com FTP server ready</span>
+
+<span class="syn-command">USER</span> <span class="syn-string">alice</span>
+<span class="syn-response">331 Password required for alice</span>
+
+<span class="syn-command">PASS</span> <span class="syn-string">••••••••</span>
+<span class="syn-response">230 User alice logged in</span>
+
+<span class="syn-comment"># Set transfer type to Image (binary) — no byte conversion</span>
+<span class="syn-command">TYPE</span> <span class="syn-string">I</span>
+<span class="syn-response">200 Type set to I</span>
+
+<span class="syn-comment"># Request passive mode — server provides address for data connection</span>
+<span class="syn-command">PASV</span>
+<span class="syn-response">227 Entering Passive Mode (<span class="syn-number">192,168,1,10,195,149</span>)</span>
+
+<span class="syn-comment"># Client opens data connection to 192.168.1.10 port 50069 (195×256+149)</span>
+<span class="syn-comment"># Then requests the file</span>
+<span class="syn-command">RETR</span> <span class="syn-string">report-2026.pdf</span>
+<span class="syn-response">150 Opening BINARY mode data connection for report-2026.pdf (<span class="syn-number">2458624</span> bytes)</span>
+
+<span class="syn-comment"># File data flows over the data connection...</span>
+<span class="syn-response">226 Transfer complete</span>
+
+<span class="syn-command">QUIT</span>
+<span class="syn-response">221 Goodbye</span>
+</FtpSession>
+
+:::note
+Notice how the three dimensions we covered all appear in this session. The `TYPE I` command sets the **data type** to Image (binary). The structure defaults to **File** (no `STRU` command needed). And the mode defaults to **Stream** (no `MODE` command needed). The PASV/RETR exchange then transfers the file as a raw byte stream over a separate data connection — exactly as Stream mode specifies.
+:::
+
+## Source & Further Reading
+
+<SourceCard
+  title="RFC 959 — File Transfer Protocol"
+  description="The complete specification of FTP, published October 1985. Section 3 covers data transfer parameters: data types, data structures, and transfer modes."
+  links={[
+    { label: "RFC Editor", href: "https://www.rfc-editor.org/rfc/rfc959" },
+    { label: "W3C version", href: "https://www.w3.org/Protocols/rfc959/" }
+  ]}
+/>
