@@ -3,6 +3,8 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 
 export default defineConfig({
+	site: 'https://yaroslavpakhaliuk.github.io',
+	base: '/pretty-docs',
 	integrations: [
 		starlight({
 			title: 'Pretty Docs',

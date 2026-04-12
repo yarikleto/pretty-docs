@@ -14,7 +14,7 @@
 <nav class="landing-nav">
   <div class="landing-nav-inner">
     <!-- Logo -->
-    <a href="/" class="landing-nav-logo">
+    <a href={import.meta.env.BASE_URL} class="landing-nav-logo">
       <div class="landing-nav-logo-icon">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <rect x="3" y="2" width="10" height="12" rx="1.5" stroke="white" stroke-width="1.5" />
@@ -28,8 +28,8 @@
 
     <!-- Right side: links + GitHub + theme toggle -->
     <div class="landing-nav-actions">
-      <a href="/networking/ftp-data-transfer/" class="landing-nav-link">Articles</a>
-      <a href="/contributing/write-an-article/" class="landing-nav-link">Contribute</a>
+      <a href={`${import.meta.env.BASE_URL}/networking/ftp-data-transfer/`} class="landing-nav-link">Articles</a>
+      <a href={`${import.meta.env.BASE_URL}/contributing/write-an-article/`} class="landing-nav-link">Contribute</a>
       <a
         href="https://github.com/YaroslavPakhaliuk/pretty-docs"
         target="_blank"
