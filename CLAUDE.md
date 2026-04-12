@@ -223,3 +223,175 @@ npm run preview   # Preview production build
 - Diagrams: flexible per article (Mermaid, SVG, PNG)
 - Source citations required on every article
 - Contribution guide + CLAUDE.md define article style
+
+---
+
+## Article Writing Guide (for AI assistants)
+
+This section is for Claude and other AI assistants helping contributors write Pretty Docs articles. It contains everything you need to produce an article that matches the project's quality and style.
+
+### What Pretty Docs articles are
+
+Pretty Docs rewrites ugly technical specifications (RFCs, man pages, standards) into clear, visual, well-sourced articles. The goal is to make foundational technical documentation genuinely readable without losing accuracy. Every claim cites the original spec. Every article is a companion to the original, not a replacement.
+
+### Article file template
+
+Create articles as `.mdx` files in `src/content/docs/{category}/`. Use this template:
+
+```mdx
+---
+title: [Topic Name]
+description: [One sentence — what this covers and why it matters. Under 160 chars.]
+---
+
+import ArticleMeta from '../../../components/article/ArticleMeta.astro';
+import SourceRef from '../../../components/article/SourceRef.astro';
+import SourceCard from '../../../components/article/SourceCard.astro';
+import RfcToggle from '../../../components/article/RfcToggle.astro';
+
+<ArticleMeta
+  source="[Spec name and section, e.g. RFC 959, Section 3]"
+  sourceUrl="[URL to original document]"
+  readingTime="[estimated reading time, e.g. 12 min]"
+/>
+
+[Opening paragraph: 3-4 sentences. What is this? Why does it matter? What does this article cover?]
+
+## [Overview Section]
+
+[Introduce the mental model. If the topic has multiple parts, list them here. Include a diagram if it helps.]
+
+<SourceRef section="[section number]" quote="[relevant quote from spec]" />
+
+## [Main Section 1]
+
+[Explain the concept. Start simple, add detail progressively.]
+
+<SourceRef section="[section number]" />
+
+## [Main Section 2]
+
+[Continue with the next concept.]
+
+:::note
+[Helpful context or tip — use sparingly.]
+:::
+
+<SourceRef section="[section number]" quote="[relevant quote]" />
+
+## [Additional sections as needed]
+
+## Source & Further Reading
+
+<SourceCard
+  title="[Spec title, e.g. RFC 959 &mdash; File Transfer Protocol]"
+  description="[Authors, date. What section this article covers.]"
+  links={[
+    { label: "[Link text]", href: "[URL]" },
+    { label: "[Link text]", href: "[URL]" }
+  ]}
+/>
+```
+
+### Frontmatter schema
+
+| Field | Required | Type | Notes |
+|-------|----------|------|-------|
+| `title` | Yes | `string` | Page heading. Under 60 chars. |
+| `description` | Yes | `string` | One sentence for SEO meta. Under 160 chars. |
+| `prev` | No | `false \| { label, link }` | Override previous page link. |
+| `next` | No | `false \| { label, link }` | Override next page link. |
+| `sidebar.badge` | No | `{ text, variant }` | Badge on sidebar item. |
+
+Article-specific metadata (source, reading time) goes in the `<ArticleMeta>` component in the MDX body, not in frontmatter.
+
+### Component reference
+
+All components are Astro components (`.astro`). Import paths are relative from the MDX file.
+
+**ArticleMeta** — source badge + view original link + reading time.
+```
+Props: source (string), sourceUrl (string), readingTime (string)
+Path:  ../../../components/article/ArticleMeta.astro
+```
+
+**SourceRef** — inline citation with left border. Place after diagrams and claims.
+```
+Props: section (string), quote (string, optional)
+Path:  ../../../components/article/SourceRef.astro
+```
+
+**SourceCard** — end-of-article source card with external links.
+```
+Props: title (string), description (string), links ({ label: string, href: string }[])
+Path:  ../../../components/article/SourceCard.astro
+```
+
+**RfcToggle** — collapsible panel showing original spec text.
+```
+Props: section (string), label (string, optional — default: "See original RFC text")
+Slot:  Original spec text as a template literal {`...`}
+Path:  ../../../components/article/RfcToggle.astro
+```
+
+**StructureCard** — card with colored letter icon, title, and description.
+```
+Props: letter (string), title (string), description (string)
+Path:  ../../../components/article/StructureCard.astro
+```
+
+**FtpSession** — custom code block for protocol sessions with manual syntax highlighting.
+```
+Props: title (string, optional), context (string, optional)
+Slot:  HTML with <span class="syn-*"> for coloring: syn-keyword, syn-string, syn-command, syn-response, syn-number, syn-comment
+Path:  ../../../components/article/FtpSession.astro
+```
+
+### Tone guidelines
+
+- **Clear but not dumbed down.** Explain hard things in plain language without losing technical precision.
+- **Direct and active.** "FTP uses two connections" not "It should be noted that FTP utilizes two connections."
+- **Define terms on first use.** Bold them: "**Stream mode** is the default."
+- **No filler.** Cut "In this section, we will discuss..." and "Basically,..." and "It is worth noting that..."
+- **No casual/jokey tone.** This is not a blog post. It is documentation.
+- **Use analogies when they help**, not as decoration.
+
+### Source citation rules
+
+Source citations are non-negotiable. Every Pretty Docs article links back to its original specification.
+
+1. Every diagram must have a `<SourceRef>` immediately below it.
+2. Every table derived from the spec should have a `<SourceRef>` below it.
+3. Specific technical claims should cite the relevant spec section.
+4. Every article must end with a "Source & Further Reading" section containing at least one `<SourceCard>`.
+5. Valid sources: RFC Editor, IETF Datatracker, W3C specs, ISO standards, official language specs, official man pages. Not blog posts or Stack Overflow.
+
+### Structure rules
+
+1. Opening paragraph: 3-4 sentences summarizing the topic.
+2. Overview section: introduce the mental model, include a diagram if appropriate.
+3. Main sections: one per major concept, ordered simple-to-complex and common-to-rare.
+4. Each `##` section should be 200-500 words. Break longer sections into `###` subsections.
+5. End with "Source & Further Reading" containing a `<SourceCard>`.
+6. Use `:::note` (blue) for helpful context. Use `:::caution` (amber) for warnings about deprecated features or common mistakes. Max 2-3 callouts per article.
+
+### Formatting rules
+
+- `## H2` for major sections, `### H3` for subsections. Never skip levels.
+- **Bold** for key terms on first introduction.
+- `Inline code` for commands, values, field names, protocol keywords.
+- Use Markdown tables for structured comparisons.
+- Use fenced code blocks with language identifiers for code examples.
+- Internal links: root-relative paths `/contributing/style-guide/`.
+- Keep headings short: "Data Types" not "A Discussion of Various Data Types."
+
+### Diagram creation
+
+- Preferred: Astro SVG components in `src/components/diagrams/` with CSS-based dark mode.
+- Alternative: Mermaid code blocks for standard diagram types (flowcharts, sequences).
+- Fallback: static PNG/SVG in `src/assets/` (no dark mode support).
+- Color palette: indigo (`#4c6ef5`), green (`#37b24d`), amber (`#f59f00`).
+- Container backgrounds: `#fafbfc` (light), `#1f2133` (dark).
+- Card fills: `white` (light), `#252740` (dark).
+- Text font: `Inter`.
+- Use CSS classes (not inline attributes) for dark mode via `:root[data-theme='dark']`.

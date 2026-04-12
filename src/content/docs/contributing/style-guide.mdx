@@ -1,6 +1,303 @@
 ---
 title: Style guide
-description: Visual and editorial conventions used across Pretty Docs articles.
+description: Tone, formatting, and component conventions for Pretty Docs articles.
 ---
 
-Reference for the design tokens, component usage, and writing style used in Pretty Docs.
+This is the reference for how Pretty Docs articles should read, look, and behave. Use it when writing a new article or reviewing someone else's.
+
+## Voice and tone
+
+Pretty Docs articles are **clear but not dumbed down**. We explain hard things in plain language without losing technical precision.
+
+**Do:**
+- Use short sentences and active voice
+- Define terms when you first use them
+- Be direct: "FTP uses two connections" not "It should be noted that FTP utilizes two connections"
+- Use "you" to address the reader when giving instructions
+- Use analogies when they genuinely help, not as a crutch
+
+**Don't:**
+- Use jargon without explaining it
+- Write in a casual/jokey tone (this is not a blog post)
+- Hedge everything with "basically" or "essentially"
+- Oversimplify to the point of inaccuracy
+- Add filler ("In this section, we will discuss...")
+
+### Example
+
+**Too casual:** "So FTP is basically this old-school protocol that moves files around. Pretty simple, right?"
+
+**Too academic:** "The File Transfer Protocol facilitates the bidirectional transfer of file objects between networked computing entities via a dual-channel TCP/IP communication paradigm."
+
+**Right:** "The File Transfer Protocol (FTP) defines a standard way to move files between a client and a server over a TCP/IP network."
+
+## Depth expectations
+
+Every article rewrites a specific section of a technical specification. The depth should match the original — we are making the spec *readable*, not summarizing it.
+
+- **Cover everything the original covers.** If the spec defines four data types, explain all four.
+- **Preserve technical precision.** Use the correct terms. If the spec calls it a "descriptor byte," so do you.
+- **Add context the original lacks.** The spec assumes you know why something exists. Explain the "why" alongside the "what."
+- **Note what is obsolete.** If a feature is no longer used in practice, say so. Use a `:::caution` callout.
+- **Skip implementation details.** The spec may describe internal implementation of FTP servers. If it is not useful to someone *using* or *understanding* the protocol, omit it with a note.
+
+## Article structure
+
+Every article follows this structure:
+
+```
+---
+title: [Topic Name]
+description: [One sentence — what this covers and why it matters]
+---
+
+import [components you need]
+
+[Opening paragraph: 3-4 sentences summarizing the topic]
+
+## [Overview section — mental model, diagram]
+
+## [Main section 1]
+
+## [Main section 2]
+
+## [Main section N]
+
+## Source & Further Reading
+
+<SourceCard ... />
+```
+
+### Section ordering
+
+Within the main body, order sections from **simple to complex** and from **common to rare**. If the spec defines a default option, explain it first.
+
+### Section length
+
+Each `## heading` section should be **200-500 words**. If a section is longer, break it into subsections with `###` headings.
+
+## Frontmatter schema
+
+```yaml
+---
+title: TCP Congestion Control                    # Required. Page heading.
+description: How TCP prevents network collapse.  # Required. SEO meta + subtitle.
+prev: false                                      # Optional. Hide previous page link.
+next:                                            # Optional. Override next page link.
+  label: "TCP Flow Control"
+  link: "/networking/tcp-flow-control/"
+sidebar:                                         # Optional. Sidebar customization.
+  badge:
+    text: New
+    variant: tip
+---
+```
+
+| Field | Required | Type | Notes |
+|-------|----------|------|-------|
+| `title` | Yes | `string` | Keep under 60 characters for clean sidebar display |
+| `description` | Yes | `string` | One sentence. Used as the subtitle below the title and as the `<meta>` description for search engines. Keep under 160 characters. |
+| `prev` | No | `false \| { label, link }` | Set `false` to hide. Object to override. |
+| `next` | No | `false \| { label, link }` | Same as `prev`. |
+| `sidebar.badge` | No | `{ text, variant }` | Variants: `note`, `tip`, `caution`, `danger` |
+
+Article-specific metadata (source, reading time, etc.) is rendered via the `<ArticleMeta>` component in the MDX body, not in frontmatter.
+
+## Formatting rules
+
+### Headings
+
+- `## H2` for major sections (Data Types, Transfer Modes, etc.)
+- `### H3` for subsections within a section
+- Never skip heading levels (no `##` followed by `####`)
+- Keep headings short and descriptive: "Data Types" not "A Discussion of the Various Data Types"
+
+### Emphasis
+
+- **Bold** for key terms when first introduced: "**Stream mode** is the default"
+- *Italics* sparingly, for emphasis on a specific word
+- `Inline code` for commands, values, field names, and protocol keywords: `TYPE`, `STRU`, `MODE`, `CRLF`
+
+### Lists
+
+- Use **bullet lists** for items without inherent order
+- Use **numbered lists** for sequential steps or ranked items
+- Keep list items parallel in structure (all start with a noun, or all start with a verb)
+
+### Tables
+
+Use Markdown tables for structured comparisons:
+
+```markdown
+| Mode | Framing | Error Recovery | Modern Usage |
+|------|---------|----------------|--------------|
+| Stream | None (EOF = close) | None | Universal |
+| Block | 3-byte header | Restart markers | Rare |
+| Compressed | Run-length encoded | None | Obsolete |
+```
+
+### Code blocks
+
+Use fenced code blocks with a language identifier:
+
+````markdown
+```bash
+ftp ftp.example.com
+```
+````
+
+For protocol sessions that need custom syntax highlighting, use the `<FtpSession>` component instead of a fenced code block.
+
+### Links
+
+- Internal links use root-relative paths: `[Style guide](/contributing/style-guide/)`
+- External links should open in a new tab (in MDX, use `<a href="..." target="_blank" rel="noopener noreferrer">`)
+- Link text should describe the destination: "Read RFC 959" not "click here"
+
+## Diagram guidelines
+
+Diagrams should make the invisible visible. If a concept involves structure, flow, timing, or relationships, it probably needs a diagram.
+
+### When to use a diagram
+
+- Binary formats (headers, flags, byte layouts)
+- Protocol flows (request/response sequences)
+- Hierarchies or taxonomies (types, categories)
+- State machines
+
+### How to create one
+
+| Approach | Best for | Dark mode | Effort |
+|----------|----------|-----------|--------|
+| Astro SVG component | Complex, custom layouts | Manual (CSS classes) | High |
+| Mermaid | Flowcharts, sequences | Automatic | Low |
+| Static PNG/SVG | One-off illustrations | No | Medium |
+
+Prefer Astro SVG components for diagrams that are central to the article's explanation. Use Mermaid for supporting diagrams that illustrate a secondary point.
+
+### Styling rules for SVG diagrams
+
+- Use the project's color palette: indigo (`#4c6ef5`), green (`#37b24d`), amber (`#f59f00`)
+- Text in diagrams uses the `Inter` font family
+- Background containers use `#fafbfc` (light) and `#1f2133` (dark)
+- Card fills use `white` (light) and `#252740` (dark)
+- Use CSS classes for colors, not inline attributes, so dark mode works via `:root[data-theme='dark']` selectors
+- The existing classes `.axis-card`, `.axis-card-text`, `.axis-card-sub` in `custom.css` handle common card patterns
+
+### Every diagram gets a citation
+
+Place a `<SourceRef>` immediately below every diagram:
+
+```mdx
+<YourDiagram />
+<SourceRef section="3.1" quote="Relevant quote from the spec." />
+```
+
+## Source citation requirements
+
+Every article must cite its sources. This is what separates Pretty Docs from blog posts and AI summaries.
+
+### Inline citations
+
+Use `<SourceRef>` after:
+
+- Every diagram
+- Every table derived from the spec
+- Specific technical claims ("The descriptor byte uses bits 0-5 as flags")
+
+```mdx
+<SourceRef section="3.4.2" quote="The descriptor codes are indicated by bit flags." />
+```
+
+The `quote` prop is optional but preferred — it lets readers verify the claim without opening the original document.
+
+### End-of-article citation
+
+Every article must end with a "Source & Further Reading" section containing at least one `<SourceCard>`:
+
+```mdx
+## Source & Further Reading
+
+<SourceCard
+  title="RFC 959 &mdash; File Transfer Protocol"
+  description="J. Postel and J. Reynolds, October 1985. This article covers Section 3: Data Transfer Functions."
+  links={[
+    { label: "Read the full RFC", href: "https://www.rfc-editor.org/rfc/rfc959" },
+    { label: "IETF Datatracker", href: "https://datatracker.ietf.org/doc/html/rfc959" }
+  ]}
+/>
+```
+
+### What counts as a valid source
+
+- RFC Editor (`rfc-editor.org`)
+- IETF Datatracker (`datatracker.ietf.org`)
+- W3C specifications (`w3.org`)
+- ISO standards (link to the abstract page)
+- Official language specifications (e.g., `open-std.org` for C/C++)
+- Official man pages (e.g., `man7.org`, `pubs.opengroup.org` for POSIX)
+
+Blog posts, tutorials, and Stack Overflow answers are **not valid sources** for Pretty Docs articles. The article itself is the "friendly explanation" — the sources must be authoritative.
+
+## Callout usage
+
+Starlight provides two callout types that Pretty Docs uses:
+
+### Note (blue)
+
+For helpful context, tips, or "good to know" information:
+
+```mdx
+:::note
+Most modern FTP clients default to **binary mode** to avoid accidental data corruption.
+:::
+```
+
+### Caution (amber)
+
+For warnings about deprecated features, common mistakes, or gotchas:
+
+```mdx
+:::caution
+Compressed mode (`MODE C`) is largely obsolete. Modern deployments should use TLS-level
+compression or application-layer tools like `gzip` instead.
+:::
+```
+
+Use callouts sparingly — no more than 2-3 per article. If everything is a callout, nothing stands out.
+
+## Component import paths
+
+All article components live in `src/components/article/`. Diagram components live in `src/components/diagrams/`. Import paths are relative from your MDX file:
+
+```mdx
+{/* From src/content/docs/networking/your-article.mdx */}
+import ArticleMeta from '../../../components/article/ArticleMeta.astro';
+import SourceRef from '../../../components/article/SourceRef.astro';
+import SourceCard from '../../../components/article/SourceCard.astro';
+import RfcToggle from '../../../components/article/RfcToggle.astro';
+import StructureCard from '../../../components/article/StructureCard.astro';
+import FtpSession from '../../../components/article/FtpSession.astro';
+
+{/* Diagrams */}
+import YourDiagram from '../../../components/diagrams/YourDiagram.astro';
+```
+
+The depth of `../` depends on where your MDX file sits in the directory tree. Articles in `src/content/docs/networking/` use `../../../components/`. If your article is in a deeper directory, adjust accordingly.
+
+## Checklist before submitting
+
+Use this checklist before opening a pull request:
+
+- [ ] Frontmatter has `title` and `description`
+- [ ] Opening paragraph summarizes the topic in 3-4 sentences
+- [ ] Article follows the structure: overview, main sections, Source & Further Reading
+- [ ] Every diagram has a `<SourceRef>` below it
+- [ ] Article ends with a `<SourceCard>` in the Source & Further Reading section
+- [ ] Callouts are used sparingly (2-3 max)
+- [ ] Headings are `##` for major sections, `###` for subsections
+- [ ] Technical terms are in `inline code` when they represent commands or values
+- [ ] Key terms are **bold** on first introduction
+- [ ] Prose is clear, direct, and technically precise
+- [ ] `npm run build` succeeds with no errors
+- [ ] Both light and dark mode look correct
