@@ -158,6 +158,70 @@ cmake --build .
 ./app
 ```
 
+### Building with Make
+
+A **Makefile** automates compilation without requiring CMake. This Makefile works with the project layout above — it discovers all `.cpp` files in `src/`, compiles them to `obj/`, and links them into an executable.
+
+```makefile
+NAME = my_app
+SRC_DIR = src
+OBJ_DIR = obj
+INCLUDE_DIR = include
+SRC = $(wildcard $(SRC_DIR)/*.cpp)
+OBJ = $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+
+CC = g++
+C_FLAGS = -Wall -Wextra -Werror
+L_FLAGS =
+
+all: $(NAME)
+
+# Link
+$(NAME): $(OBJ)
+	$(CC) $(L_FLAGS) $(OBJ) -o $@
+
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
+
+# Compile
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
+	$(CC) $(C_FLAGS) -c $< -I $(INCLUDE_DIR) -o $@
+
+clean:
+	rm -rf $(OBJ_DIR)
+
+fclean: clean
+	rm -f $(NAME)
+
+re: fclean all
+```
+
+Build commands:
+```bash
+make          # build
+make clean    # remove object files
+make fclean   # remove object files + executable
+make re       # full rebuild
+./my_app      # run
+```
+
+| Variable | Purpose |
+|----------|---------|
+| `NAME` | Executable name |
+| `SRC_DIR` / `OBJ_DIR` / `INCLUDE_DIR` | Directory paths |
+| `SRC` | All `.cpp` files discovered via `wildcard` |
+| `OBJ` | Corresponding `.o` files via pattern substitution |
+| `CC` | Compiler (`g++`, `clang++`) |
+| `C_FLAGS` | Compiler flags (warnings, standard) |
+| `L_FLAGS` | Linker flags (e.g. `-lm`, `-lpthread`) |
+
+| Target | Effect |
+|--------|--------|
+| `all` | Build the executable (default) |
+| `clean` | Remove object files |
+| `fclean` | Remove object files and executable |
+| `re` | Full clean rebuild |
+
 ### Compilation Process
 
 C++ compilation happens in four stages:
@@ -1165,6 +1229,8 @@ intStack.push(42);
 
 C++ handles runtime errors with **try**, **catch**, and **throw**. When an error occurs, `throw` creates an exception that propagates up the call stack until a matching `catch` block is found.
 
+### try / catch / throw
+
 ```cpp
 try {
     int age = -1;
@@ -1179,18 +1245,131 @@ try {
 }
 ```
 
-Common standard exception classes:
+Catch blocks are matched top-to-bottom — put more specific types first. Always catch by `const&` to avoid slicing and unnecessary copies.
+
+### Standard Exception Hierarchy
+
+All standard exceptions inherit from `std::exception`. The two main branches are `logic_error` (programmer mistakes) and `runtime_error` (external failures).
 
 | Exception | Header | Use |
 |-----------|--------|-----|
 | `std::exception` | `<exception>` | Base class for all standard exceptions |
-| `std::runtime_error` | `<stdexcept>` | Errors detectable only at runtime |
-| `std::logic_error` | `<stdexcept>` | Errors due to faulty logic |
+| `std::logic_error` | `<stdexcept>` | Errors due to faulty logic (preventable bugs) |
 | `std::invalid_argument` | `<stdexcept>` | Invalid function arguments |
-| `std::out_of_range` | `<stdexcept>` | Index out of range |
+| `std::out_of_range` | `<stdexcept>` | Index out of bounds |
+| `std::runtime_error` | `<stdexcept>` | Errors detectable only at runtime |
+| `std::overflow_error` | `<stdexcept>` | Arithmetic overflow |
 | `std::bad_alloc` | `<new>` | Memory allocation failure |
+| `std::bad_cast` | `<typeinfo>` | Failed `dynamic_cast` on references |
+
+### Custom Exception Hierarchies
+
+For real projects, define a **project-level base exception** that inherits from a standard exception, then derive specific error types from it. This lets callers catch all project errors with one type, or handle specific errors individually.
+
+```cpp
+// exceptions.hpp
+#pragma once
+#include <stdexcept>
+#include <string>
+
+namespace ftp {
+
+class FtpException : public std::runtime_error {
+public:
+    explicit FtpException(const std::string& msg) : std::runtime_error(msg) {}
+};
+
+class ArgsException : public FtpException {
+public:
+    explicit ArgsException(const std::string& msg) : FtpException(msg) {}
+};
+
+class UsageError : public ArgsException {
+public:
+    UsageError() : ArgsException("Usage: ./my_ftp <port> <path>") {}
+};
+
+class ParsePortError : public ArgsException {
+public:
+    ParsePortError() : ArgsException("port must be a number") {}
+};
+
+class InvalidPortError : public ArgsException {
+public:
+    InvalidPortError() : ArgsException("Port must be between 1024 and 65535") {}
+};
+
+}  // namespace ftp
+```
+
+This hierarchy allows granular catching:
+
+```cpp
+try {
+    ftp::Server server(argc, argv);
+    server.run();
+} catch (const ftp::ArgsException& e) {
+    cerr << "Argument error: " << e.what() << endl;
+    return 1;
+} catch (const ftp::FtpException& e) {
+    cerr << "FTP error: " << e.what() << endl;
+    return 1;
+} catch (const std::exception& e) {
+    cerr << "Unexpected error: " << e.what() << endl;
+    return 1;
+}
+```
+
+### noexcept
+
+Mark functions **`noexcept`** when they are guaranteed not to throw. If a `noexcept` function does throw, the program calls `std::terminate` immediately.
+
+```cpp
+int size() const noexcept { return n; }          // simple getter, cannot fail
+void swap(Buffer& other) noexcept;                // swap should never throw
+~MyClass() noexcept;                              // destructors are noexcept by default
+Buffer(Buffer&& other) noexcept;                  // move operations should be noexcept
+```
+
+| Mark `noexcept` | Do NOT mark `noexcept` |
+|-----------------|----------------------|
+| Destructors | Functions that allocate memory |
+| Move constructors/assignment | Functions that do I/O |
+| Swap functions | Functions that call potentially-throwing code |
+| Simple getters/setters | Virtual functions that subclasses may override with throwing code |
+
+### Rethrowing Exceptions
+
+Use bare `throw;` inside a catch block to rethrow the current exception without slicing it.
+
+```cpp
+try {
+    riskyOperation();
+} catch (const std::exception& e) {
+    logError(e.what());   // log it
+    throw;                // rethrow original exception (preserves type)
+    // throw e;           // BAD: slices to std::exception, loses derived type
+}
+```
+
+### Best Practices
+
+| Do | Don't |
+|----|-------|
+| Throw by value, catch by `const&` | Catch by value (causes slicing) |
+| Use exceptions for actual errors | Use exceptions for control flow |
+| Build a project exception hierarchy | Throw strings or ints |
+| Clean up resources with RAII | Use manual try/catch for cleanup |
+| Mark non-throwing functions `noexcept` | Mark everything `noexcept` optimistically |
+| Catch at the level that can handle the error | Catch and silently ignore |
+| Let exceptions propagate when you can't recover | Catch and rethrow with `throw e;` (slices) |
+
+:::note
+When exceptions are not an option (embedded systems, real-time code), use return values with `std::optional`, `std::expected` (C++23), or `std::pair<T, ErrorCode>`. The C++ Core Guidelines recommend exceptions as the primary error mechanism for most code.
+:::
 
 <SourceRef section="Exception Handling" quote="cppreference.com" />
+<SourceRef section="E: Error handling" quote="C++ Core Guidelines" />
 
 ## Lambda Expressions
 
@@ -1374,84 +1553,380 @@ The standard library uses RAII everywhere: `vector` manages heap memory, `unique
 
 <SourceRef section="RAII" quote="cppreference.com" />
 
-## STL Containers
+## Data Structures (STL Containers)
 
-The **Standard Template Library** provides a set of generic container classes.
+The **Standard Template Library** provides generic container classes for every common data structure. All containers are templates — they work with any type.
 
-### Associative Containers
+### Which Container to Use?
 
-| Container | Description | Header | Ordered |
-|-----------|-------------|--------|---------|
-| `map<K,V>` | Key-value pairs, unique keys | `<map>` | Yes |
-| `multimap<K,V>` | Key-value pairs, duplicate keys allowed | `<map>` | Yes |
-| `set<T>` | Unique elements | `<set>` | Yes |
-| `multiset<T>` | Duplicate elements allowed | `<set>` | Yes |
-| `unordered_map<K,V>` | Hash map, unique keys | `<unordered_map>` | No |
-| `unordered_set<T>` | Hash set, unique elements | `<unordered_set>` | No |
+| Need | Container | Why |
+|------|-----------|-----|
+| Dynamic array, general purpose | `vector` | Contiguous memory, fast random access, cache-friendly |
+| Fixed-size array | `array` | No heap allocation, bounds-checkable with `.at()` |
+| FIFO queue | `queue` | `push` to back, `pop` from front |
+| LIFO stack | `stack` | `push` and `pop` from top |
+| Priority queue / heap | `priority_queue` | Always gives you the largest (or smallest) element |
+| Fast insert/remove at both ends | `deque` | Like vector but O(1) push/pop at front too |
+| Fast insert/remove anywhere | `list` | Doubly linked list, O(1) splice and insert at iterator |
+| Key-value lookup | `map` or `unordered_map` | Sorted keys (map) or O(1) average lookup (unordered) |
+| Unique collection | `set` or `unordered_set` | Sorted (set) or O(1) average lookup (unordered) |
+| Sorted data with duplicates | `multiset` / `multimap` | Like set/map but allows duplicate keys |
+
+### vector
+
+**Dynamic array.** Elements stored contiguously in memory. The default choice for most situations.
+
+```cpp
+#include <vector>
+
+vector<int> v = {1, 2, 3};
+v.push_back(4);           // {1, 2, 3, 4}
+v.pop_back();              // {1, 2, 3}
+v.insert(v.begin(), 0);   // {0, 1, 2, 3}
+v.erase(v.begin() + 1);   // {0, 2, 3}
+cout << v[0];              // 0
+cout << v.at(1);           // 2 (bounds-checked)
+cout << v.size();          // 3
+cout << v.empty();         // 0 (false)
+v.clear();                 // {}
+```
+
+| Method | Complexity | Description |
+|--------|-----------|-------------|
+| `push_back(val)` | Amortized O(1) | Add to end |
+| `pop_back()` | O(1) | Remove from end |
+| `operator[]` / `at(i)` | O(1) | Access by index (`at` throws on out-of-range) |
+| `insert(pos, val)` | O(n) | Insert at iterator position |
+| `erase(pos)` | O(n) | Remove at iterator position |
+| `size()` / `empty()` | O(1) | Element count / emptiness check |
+| `front()` / `back()` | O(1) | First / last element |
+| `clear()` | O(n) | Remove all elements |
+| `reserve(n)` | O(n) | Pre-allocate capacity to avoid reallocations |
+| `shrink_to_fit()` | O(n) | Release unused capacity |
+
+### array
+
+**Fixed-size array** (C++11). Size is a compile-time constant. No heap allocation. Safer alternative to C-style arrays.
+
+```cpp
+#include <array>
+
+array<int, 4> a = {10, 20, 30, 40};
+cout << a[2];        // 30
+cout << a.at(5);     // throws std::out_of_range
+cout << a.size();    // 4
+a.fill(0);           // {0, 0, 0, 0}
+```
+
+### deque
+
+**Double-ended queue.** Like vector but supports O(1) push/pop at both front and back. Elements are not stored contiguously.
+
+```cpp
+#include <deque>
+
+deque<int> dq = {2, 3, 4};
+dq.push_front(1);    // {1, 2, 3, 4}
+dq.push_back(5);     // {1, 2, 3, 4, 5}
+dq.pop_front();       // {2, 3, 4, 5}
+dq.pop_back();        // {2, 3, 4}
+cout << dq[1];        // 3  (random access)
+```
+
+| Method | Complexity |
+|--------|-----------|
+| `push_front(val)` / `push_back(val)` | Amortized O(1) |
+| `pop_front()` / `pop_back()` | O(1) |
+| `operator[]` / `at(i)` | O(1) |
+| `insert(pos, val)` / `erase(pos)` | O(n) |
+
+### list
+
+**Doubly linked list.** Fast insert/remove at any position given an iterator, but no random access.
+
+```cpp
+#include <list>
+
+list<int> lst = {1, 2, 3};
+lst.push_front(0);          // {0, 1, 2, 3}
+lst.push_back(4);           // {0, 1, 2, 3, 4}
+
+auto it = lst.begin();
+advance(it, 2);             // move iterator to index 2
+lst.insert(it, 99);         // {0, 1, 99, 2, 3, 4}
+lst.erase(it);              // {0, 1, 99, 3, 4}
+
+lst.sort();                  // {0, 1, 3, 4, 99}
+lst.reverse();               // {99, 4, 3, 1, 0}
+lst.remove(3);               // {99, 4, 1, 0}
+```
+
+| Method | Complexity |
+|--------|-----------|
+| `push_front` / `push_back` | O(1) |
+| `insert(it, val)` / `erase(it)` | O(1) at known position |
+| `sort()` | O(n log n) |
+| `remove(val)` | O(n) |
+| `splice(pos, other_list)` | O(1) — moves nodes without copying |
+
+:::note
+`list` has no `operator[]`. To reach an element by position, use `std::advance(it, n)` which is O(n). If you need random access, use `vector` or `deque`.
+:::
+
+### stack
+
+**LIFO** (Last In, First Out) adaptor. Wraps `deque` by default.
+
+```cpp
+#include <stack>
+
+stack<int> st;
+st.push(10);
+st.push(20);
+st.push(30);
+
+cout << st.top();    // 30
+st.pop();
+cout << st.top();    // 20
+cout << st.size();   // 2
+cout << st.empty();  // 0 (false)
+```
+
+| Method | Complexity | Description |
+|--------|-----------|-------------|
+| `push(val)` | O(1) | Add to top |
+| `pop()` | O(1) | Remove from top (does NOT return value) |
+| `top()` | O(1) | View top element |
+| `size()` / `empty()` | O(1) | Element count / emptiness check |
+
+### queue
+
+**FIFO** (First In, First Out) adaptor. Wraps `deque` by default.
+
+```cpp
+#include <queue>
+
+queue<int> q;
+q.push(10);
+q.push(20);
+q.push(30);
+
+cout << q.front();   // 10
+cout << q.back();    // 30
+q.pop();
+cout << q.front();   // 20
+cout << q.size();    // 2
+```
+
+| Method | Complexity | Description |
+|--------|-----------|-------------|
+| `push(val)` | O(1) | Add to back |
+| `pop()` | O(1) | Remove from front (does NOT return value) |
+| `front()` / `back()` | O(1) | View front / back element |
+| `size()` / `empty()` | O(1) | Element count / emptiness check |
+
+### priority_queue
+
+**Max-heap** by default — `top()` always returns the largest element.
+
+```cpp
+#include <queue>
+
+priority_queue<int> pq;
+pq.push(3);
+pq.push(1);
+pq.push(4);
+pq.push(1);
+pq.push(5);
+
+cout << pq.top();  // 5
+pq.pop();
+cout << pq.top();  // 4
+
+// Min-heap: reverse the ordering
+priority_queue<int, vector<int>, greater<int>> minPq;
+minPq.push(3); minPq.push(1); minPq.push(4);
+cout << minPq.top();  // 1
+```
+
+| Method | Complexity | Description |
+|--------|-----------|-------------|
+| `push(val)` | O(log n) | Insert element |
+| `pop()` | O(log n) | Remove top element |
+| `top()` | O(1) | View top (largest by default) element |
+
+### map
+
+**Ordered key-value store.** Keys are unique and sorted. Implemented as a red-black tree.
+
+```cpp
+#include <map>
+
+map<string, int> ages;
+ages["Alice"] = 30;
+ages["Bob"] = 25;
+ages.insert({"Charlie", 35});
+
+cout << ages["Alice"];      // 30
+cout << ages.at("Bob");     // 25 (throws if key missing)
+cout << ages.count("Eve");  // 0 (not found)
+
+ages.erase("Bob");
+
+for (auto& [name, age] : ages)
+    cout << name << ": " << age << endl;
+// Alice: 30, Charlie: 35  (sorted by key)
+
+auto it = ages.find("Alice");
+if (it != ages.end())
+    cout << it->second;     // 30
+```
+
+| Method | Complexity | Description |
+|--------|-----------|-------------|
+| `operator[key]` | O(log n) | Access/insert (creates default if missing) |
+| `at(key)` | O(log n) | Access (throws `out_of_range` if missing) |
+| `insert({k, v})` | O(log n) | Insert if key doesn't exist |
+| `erase(key)` / `erase(it)` | O(log n) | Remove by key or iterator |
+| `find(key)` | O(log n) | Returns iterator (or `end()` if not found) |
+| `count(key)` | O(log n) | Returns 0 or 1 |
+| `size()` / `empty()` | O(1) | Element count / emptiness check |
+
+:::caution
+`operator[]` on a map **inserts a default value** if the key doesn't exist. Use `find()` or `count()` to check for existence without modifying the map.
+:::
+
+### unordered_map
+
+**Hash map.** Same interface as `map` but O(1) average lookup instead of O(log n). Keys are not sorted.
+
+```cpp
+#include <unordered_map>
+
+unordered_map<string, int> scores;
+scores["Alice"] = 95;
+scores["Bob"] = 87;
+
+// Same API as map: [], at(), find(), erase(), count(), size()
+```
+
+| | `map` | `unordered_map` |
+|-|-------|-----------------|
+| Lookup | O(log n) | O(1) average, O(n) worst |
+| Insertion | O(log n) | O(1) average |
+| Ordered iteration | Yes (by key) | No |
+| Memory | Less | More (hash table overhead) |
+| Use when | Need sorted keys or range queries | Need fastest lookup |
+
+### set
+
+**Ordered unique collection.** Elements are sorted and deduplicated. Implemented as a red-black tree.
+
+```cpp
+#include <set>
+
+set<int> s = {3, 1, 4, 1, 5, 9, 2, 6};
+// s = {1, 2, 3, 4, 5, 6, 9} — sorted, duplicates removed
+
+s.insert(7);           // {1, 2, 3, 4, 5, 6, 7, 9}
+s.erase(4);            // {1, 2, 3, 5, 6, 7, 9}
+cout << s.count(3);    // 1 (present)
+cout << s.count(4);    // 0 (removed)
+
+auto it = s.find(5);
+if (it != s.end())
+    cout << *it;       // 5
+
+// Range: elements >= 3 and < 7
+auto lo = s.lower_bound(3);   // iterator to 3
+auto hi = s.lower_bound(7);   // iterator to 7
+for (auto it = lo; it != hi; ++it)
+    cout << *it << " ";        // 3 5 6
+```
+
+| Method | Complexity | Description |
+|--------|-----------|-------------|
+| `insert(val)` | O(log n) | Add element (ignored if duplicate) |
+| `erase(val)` / `erase(it)` | O(log n) | Remove element |
+| `find(val)` | O(log n) | Returns iterator or `end()` |
+| `count(val)` | O(log n) | Returns 0 or 1 |
+| `lower_bound(val)` | O(log n) | Iterator to first element >= val |
+| `upper_bound(val)` | O(log n) | Iterator to first element > val |
+
+`unordered_set` provides the same interface with O(1) average operations but no ordering.
+
+### multimap and multiset
+
+Like `map` and `set` but allow **duplicate keys/values**.
 
 ```cpp
 #include <map>
 #include <set>
 
-map<string, int> ages;
-ages["Alice"] = 30;
-ages["Bob"] = 25;
+multimap<string, int> grades;
+grades.insert({"Alice", 90});
+grades.insert({"Alice", 85});   // duplicate key OK
+grades.insert({"Bob", 92});
 
-for (auto& [name, age] : ages)
-    cout << name << ": " << age << endl;
+cout << grades.count("Alice");  // 2
 
-set<int> s = {3, 1, 4, 1, 5};  // {1, 3, 4, 5} — duplicates removed, sorted
+// Iterate all values for a key
+auto [lo, hi] = grades.equal_range("Alice");
+for (auto it = lo; it != hi; ++it)
+    cout << it->second << " ";  // 90 85
+
+multiset<int> ms = {1, 1, 2, 3, 3, 3};
+cout << ms.count(3);  // 3
 ```
 
-### Container Adaptors
+### pair and tuple
 
-| Container | Description | Header | Underlying |
-|-----------|-------------|--------|------------|
-| `stack<T>` | LIFO structure | `<stack>` | `deque` |
-| `queue<T>` | FIFO structure | `<queue>` | `deque` |
-| `priority_queue<T>` | Max-heap by default | `<queue>` | `vector` |
+**`pair`** holds two values. **`tuple`** holds any number of values. Both are in `<utility>` and `<tuple>`.
 
 ```cpp
-#include <stack>
-#include <queue>
+#include <utility>
+#include <tuple>
 
-stack<int> st;
-st.push(1); st.push(2); st.push(3);
-cout << st.top();  // 3
-st.pop();
+pair<string, int> p = {"Alice", 30};
+cout << p.first << " " << p.second;   // Alice 30
 
-queue<int> q;
-q.push(1); q.push(2);
-cout << q.front();  // 1
-q.pop();
+tuple<int, double, string> t = {1, 3.14, "hello"};
+cout << get<0>(t);   // 1
+cout << get<2>(t);   // hello
 
-priority_queue<int> pq;
-pq.push(3); pq.push(1); pq.push(4);
-cout << pq.top();  // 4
+// Structured bindings (C++17)
+auto [name, age] = p;
+auto [x, y, z] = t;
 ```
 
-### Sequence Containers
+### bitset
 
-| Container | Description | Header | Random Access |
-|-----------|-------------|--------|---------------|
-| `vector<T>` | Dynamic array | `<vector>` | Yes |
-| `deque<T>` | Double-ended queue | `<deque>` | Yes |
-| `list<T>` | Doubly linked list | `<list>` | No |
-| `forward_list<T>` | Singly linked list | `<forward_list>` | No |
-| `array<T,N>` | Fixed-size array | `<array>` | Yes |
+**Fixed-size bit array** for compact boolean storage and bitwise operations. Size is a compile-time constant.
 
 ```cpp
-#include <list>
-#include <deque>
+#include <bitset>
 
-list<int> lst = {1, 2, 3};
-lst.push_front(0);   // {0, 1, 2, 3}
-lst.push_back(4);    // {0, 1, 2, 3, 4}
-
-deque<int> dq = {2, 3, 4};
-dq.push_front(1);    // {1, 2, 3, 4}
-dq.push_back(5);     // {1, 2, 3, 4, 5}
+bitset<8> b("10110011");
+cout << b;             // 10110011
+cout << b.count();     // 5 (number of 1-bits)
+cout << b.test(0);     // 1 (bit at position 0)
+b.flip();               // 01001100
+b.set(7);               // 11001100
+b.reset(7);             // 01001100
+cout << b.to_ulong();  // 76
 ```
+
+### Container Complexity Summary
+
+| Container | Access | Insert/Remove (end) | Insert/Remove (middle) | Find |
+|-----------|--------|-------------------|----------------------|------|
+| `vector` | O(1) | Amortized O(1) | O(n) | O(n) |
+| `deque` | O(1) | O(1) both ends | O(n) | O(n) |
+| `list` | O(n) | O(1) both ends | O(1) at iterator | O(n) |
+| `stack` / `queue` | O(1) top/front | O(1) | N/A | N/A |
+| `priority_queue` | O(1) top | O(log n) | N/A | N/A |
+| `map` / `set` | O(log n) | O(log n) | O(log n) | O(log n) |
+| `unordered_map` / `set` | O(1) avg | O(1) avg | O(1) avg | O(1) avg |
 
 <SourceRef section="STL Containers" quote="cppreference.com" />
 
