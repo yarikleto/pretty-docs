@@ -25,7 +25,7 @@ export default defineConfig({
 				{
 					label: 'Networking',
 					items: [
-						{ label: 'FTP Data Transfer', slug: 'w3.org/Protocols/rfc959' },
+						{ label: 'File Transfer Protocol (FTP)', slug: 'w3.org/Protocols/rfc959' },
 					],
 				},
 				{
