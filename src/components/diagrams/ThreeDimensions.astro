@@ -5,34 +5,52 @@
  * Shows TYPE (data types), STRU (data structures), and MODE (transfer modes)
  * as three horizontal colored rows with inline option cards.
  *
- * Dark mode adaptation uses CSS classes defined in custom.css:
- *   .diagram-bg, .diagram-card, .diagram-text-primary, .diagram-text-secondary,
- *   .axis-card, .axis-card-text, .axis-card-sub
+ * RFC 959 Section 3 defines three independent dimensions that together
+ * describe how file data is represented and transmitted:
+ *   TYPE — how bytes are interpreted (ASCII, Image, EBCDIC, Local)
+ *   STRU — logical structure of the data (File, Record, Page)
+ *   MODE — how data is transmitted over the connection (Stream, Block, Compressed)
  *
- * Minimal walking-skeleton version — will be polished in TASK-017/TASK-018.
+ * Dark mode adaptation uses CSS classes defined in custom.css section 8:
+ *   .axis-card, .axis-card-text, .axis-card-sub
+ * Plus scoped styles below for the container and row gradient swaps.
  */
 ---
 
-<div class="diagram-wrapper">
-  <svg viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg">
+<div class="diagram-wrapper three-dimensions">
+  <svg viewBox="0 0 700 320" class="three-dimensions-svg" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <linearGradient id="axisGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <!-- Light mode gradients -->
+      <linearGradient id="td-axisGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" stop-color="#4c6ef5" stop-opacity="0.1"/>
         <stop offset="100%" stop-color="#4c6ef5" stop-opacity="0.03"/>
       </linearGradient>
-      <linearGradient id="axisGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <linearGradient id="td-axisGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" stop-color="#37b24d" stop-opacity="0.1"/>
         <stop offset="100%" stop-color="#37b24d" stop-opacity="0.03"/>
       </linearGradient>
-      <linearGradient id="axisGrad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <linearGradient id="td-axisGrad3" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" stop-color="#f59f00" stop-opacity="0.1"/>
         <stop offset="100%" stop-color="#f59f00" stop-opacity="0.03"/>
       </linearGradient>
+      <!-- Dark mode gradients (higher opacity for visibility on dark surfaces) -->
+      <linearGradient id="td-axisGrad1Dark" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#4c6ef5" stop-opacity="0.15"/>
+        <stop offset="100%" stop-color="#4c6ef5" stop-opacity="0.05"/>
+      </linearGradient>
+      <linearGradient id="td-axisGrad2Dark" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#37b24d" stop-opacity="0.15"/>
+        <stop offset="100%" stop-color="#37b24d" stop-opacity="0.05"/>
+      </linearGradient>
+      <linearGradient id="td-axisGrad3Dark" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#f59f00" stop-opacity="0.15"/>
+        <stop offset="100%" stop-color="#f59f00" stop-opacity="0.05"/>
+      </linearGradient>
     </defs>
 
-    {/* Axis 1: Data Type (indigo) */}
-    <rect class="axis-row" x="30" y="30" width="640" height="76" rx="12"
-          fill="url(#axisGrad1)" stroke="#bac8ff" stroke-width="1"/>
+    {/* Axis 1: Data Type (indigo/blue tint) */}
+    <rect class="axis-row axis-row-type" x="30" y="30" width="640" height="76" rx="12"
+          fill="url(#td-axisGrad1)" stroke="#bac8ff" stroke-width="1"/>
     <text x="56" y="55" font-size="11" font-weight="700" fill="#4263eb"
           letter-spacing="0.08em">TYPE</text>
     <text x="56" y="72" font-size="11" fill="#748ffc">Data Type</text>
@@ -65,9 +83,9 @@
     <text class="axis-card-sub" x="548" y="78" font-size="10"
           fill="#868e96" text-anchor="middle">Custom byte</text>
 
-    {/* Axis 2: Structure (green) */}
-    <rect class="axis-row" x="30" y="122" width="640" height="76" rx="12"
-          fill="url(#axisGrad2)" stroke="#b2f2bb" stroke-width="1"/>
+    {/* Axis 2: Structure (green tint) */}
+    <rect class="axis-row axis-row-stru" x="30" y="122" width="640" height="76" rx="12"
+          fill="url(#td-axisGrad2)" stroke="#b2f2bb" stroke-width="1"/>
     <text x="56" y="147" font-size="11" font-weight="700" fill="#2b8a3e"
           letter-spacing="0.08em">STRU</text>
     <text x="56" y="164" font-size="11" fill="#51cf66">Structure</text>
@@ -93,9 +111,9 @@
     <text class="axis-card-sub" x="507" y="170" font-size="10"
           fill="#868e96" text-anchor="middle">Indexed pages</text>
 
-    {/* Axis 3: Mode (amber) */}
-    <rect class="axis-row" x="30" y="214" width="640" height="76" rx="12"
-          fill="url(#axisGrad3)" stroke="#ffe066" stroke-width="1"/>
+    {/* Axis 3: Transfer Mode (amber tint) */}
+    <rect class="axis-row axis-row-mode" x="30" y="214" width="640" height="76" rx="12"
+          fill="url(#td-axisGrad3)" stroke="#ffe066" stroke-width="1"/>
     <text x="56" y="239" font-size="11" font-weight="700" fill="#e67700"
           letter-spacing="0.08em">MODE</text>
     <text x="56" y="256" font-size="11" fill="#fcc419">Transfer Mode</text>
@@ -124,22 +142,43 @@
 </div>
 
 <style>
-  .diagram-wrapper {
+  /* Container: bg-surface-50, rounded-2xl, p-8 per design spec section 2.9 */
+  .diagram-wrapper.three-dimensions {
     background-color: #fafbfc;
     border-radius: 1rem;
     padding: 2rem;
     margin-bottom: 1.5rem;
   }
 
-  .diagram-wrapper svg text {
+  .three-dimensions-svg {
+    width: 100%;
+    display: block;
+  }
+
+  .three-dimensions-svg text {
     font-family: 'Inter', system-ui, sans-serif;
   }
 
-  :root[data-theme='dark'] .diagram-wrapper {
+  /* Dark mode: container background */
+  :root[data-theme='dark'] .diagram-wrapper.three-dimensions {
     background-color: #1f2133;
   }
 
+  /* Dark mode: row stroke opacity reduced */
   :root[data-theme='dark'] .axis-row {
     stroke-opacity: 0.3;
+  }
+
+  /* Dark mode: swap row gradients to higher-opacity dark variants */
+  :root[data-theme='dark'] .axis-row-type {
+    fill: url(#td-axisGrad1Dark);
+  }
+
+  :root[data-theme='dark'] .axis-row-stru {
+    fill: url(#td-axisGrad2Dark);
+  }
+
+  :root[data-theme='dark'] .axis-row-mode {
+    fill: url(#td-axisGrad3Dark);
   }
 </style>
