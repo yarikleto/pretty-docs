@@ -5,7 +5,7 @@
 Turn unreadable technical documentation into beautiful, understandable articles — open source, community-driven, always sourced.
 
 ## Current State
-Milestone 0 (Walking Skeleton) complete. End-to-end flow works: landing page → FTP article with diagram + source citations + dark mode. Starting Milestone 1 (Landing Page) and Milestone 2 (Article CSS) in parallel.
+MVP complete. All 22 tasks across 5 milestones done. Landing page, FTP Data Transfer article, contributing pages, and CLAUDE.md style guide all shipped. Ready for deployment and community contributions.
 
 ## The Bet
 The world's most important technical knowledge (RFCs, standards, man pages) is trapped in formats from the 1970s. AI chatbots can explain it on the fly, but their answers are ephemeral, unverified, and lack proper diagrams. A curated, community-reviewed, beautifully presented alternative will become the go-to reference — the "Wikipedia of ugly docs."
