@@ -1,0 +1,99 @@
+---
+/**
+ * StructureCard — Card showing a data structure option (File / Record / Page).
+ *
+ * Displays a colored letter icon in a rounded container alongside a bold title
+ * and description. Designed to be stacked vertically with `space-y-4` on the
+ * parent wrapper. The green icon conveys the "Structure" axis from the FTP
+ * Three Dimensions model.
+ *
+ * Props:
+ *   letter      — Single character displayed in the green icon (e.g. "F", "R", "P")
+ *   title       — Card heading (e.g. "File Structure")
+ *   description — Body text explaining the structure type
+ */
+
+interface Props {
+  letter: string;
+  title: string;
+  description: string;
+}
+
+const { letter, title, description } = Astro.props;
+---
+
+<div class="structure-card">
+  <div class="structure-card-icon">
+    <span class="structure-card-letter">{letter}</span>
+  </div>
+  <div>
+    <h3 class="structure-card-title">{title}</h3>
+    <p class="structure-card-description">{description}</p>
+  </div>
+</div>
+
+<style>
+  .structure-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;               /* gap-3 */
+    padding: 1.25rem;           /* p-5 */
+    border: 1px solid #e9ecef;  /* border-surface-200 */
+    border-radius: 0.75rem;     /* rounded-xl */
+  }
+
+  .structure-card-icon {
+    width: 2rem;                /* w-8 */
+    height: 2rem;               /* h-8 */
+    border-radius: 0.5rem;      /* rounded-lg */
+    background: #f0fdf4;        /* bg-green-50 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 0.125rem;       /* mt-0.5 */
+  }
+
+  .structure-card-letter {
+    font-size: 0.75rem;         /* text-xs */
+    font-weight: 700;           /* font-bold */
+    color: #16a34a;             /* text-green-600 */
+  }
+
+  .structure-card-title {
+    font-size: 1rem;            /* text-base */
+    font-weight: 600;           /* font-semibold */
+    color: #212529;             /* surface-900 */
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .structure-card-description {
+    font-size: 0.875rem;        /* text-sm */
+    color: #868e96;             /* surface-600 */
+    line-height: 1.625;         /* leading-relaxed */
+    margin: 0.25rem 0 0;        /* mt-1 */
+  }
+
+  /* --- Dark mode --- */
+
+  :root[data-theme='dark'] .structure-card {
+    border-color: #2e3150;      /* dark-border */
+  }
+
+  :root[data-theme='dark'] .structure-card-icon {
+    background: rgba(55, 178, 77, 0.12);
+  }
+
+  :root[data-theme='dark'] .structure-card-letter {
+    color: #51cf66;
+  }
+
+  :root[data-theme='dark'] .structure-card-title {
+    color: #e4e6f0;             /* dark-textBright */
+  }
+
+  :root[data-theme='dark'] .structure-card-description {
+    color: #c8cad8;             /* dark-text */
+  }
+</style>

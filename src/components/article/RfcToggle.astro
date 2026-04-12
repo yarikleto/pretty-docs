@@ -1,0 +1,162 @@
+---
+/**
+ * RfcToggle — Collapsible panel showing original RFC text.
+ *
+ * Allows readers to compare the Pretty Docs explanation with the original
+ * RFC source material. Collapsed by default; a small button toggles the
+ * panel open/closed with vanilla JS (no framework runtime).
+ *
+ * Props:
+ *   section — RFC section number, e.g. "3.1.1"
+ *   label   — button text when collapsed (default: "See original RFC text")
+ *
+ * Usage:
+ *   <RfcToggle section="3.1.1">
+ *     {`   3.1.1.  DATA TYPES ...`}
+ *   </RfcToggle>
+ */
+
+interface Props {
+  section: string;
+  label?: string;
+}
+
+const { section, label = 'See original RFC text' } = Astro.props;
+const hideLabel = label.replace(/^See /, 'Hide ');
+---
+
+<div class="rfc-toggle" data-label={label} data-hide-label={hideLabel}>
+  <button class="rfc-toggle-btn" type="button">{label}</button>
+  <div class="rfc-toggle-panel">
+    <div class="rfc-toggle-header">RFC 959, Section {section}</div>
+    <div class="rfc-toggle-body"><slot /></div>
+  </div>
+</div>
+
+<script>
+  function initRfcToggles() {
+    document.querySelectorAll('.rfc-toggle').forEach((root) => {
+      const btn = root.querySelector('.rfc-toggle-btn') as HTMLButtonElement;
+      const panel = root.querySelector('.rfc-toggle-panel') as HTMLElement;
+      if (!btn || !panel) return;
+
+      // Skip if already initialized
+      if (btn.dataset.rfcInit) return;
+      btn.dataset.rfcInit = '1';
+
+      const labelShow = root.getAttribute('data-label') || 'See original RFC text';
+      const labelHide = root.getAttribute('data-hide-label') || 'Hide original RFC text';
+
+      btn.addEventListener('click', () => {
+        const isOpen = panel.classList.contains('is-open');
+        if (isOpen) {
+          panel.classList.remove('is-open');
+          btn.classList.remove('is-active');
+          btn.textContent = labelShow;
+        } else {
+          panel.classList.add('is-open');
+          btn.classList.add('is-active');
+          btn.textContent = labelHide;
+        }
+      });
+    });
+  }
+
+  // Run on initial load and on Astro view-transition navigations
+  initRfcToggles();
+  document.addEventListener('astro:after-swap', initRfcToggles);
+</script>
+
+<style>
+  /* ── Toggle button ─────────────────────────────── */
+  .rfc-toggle-btn {
+    font-size: 0.75rem;
+    color: #868e96;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 0.25rem 0.75rem;
+    cursor: pointer;
+    background: white;
+    transition: all 0.15s ease-out;
+    font-family: inherit;
+    line-height: 1.5;
+  }
+
+  .rfc-toggle-btn:hover {
+    border-color: #adb5bd;
+    color: #495057;
+  }
+
+  .rfc-toggle-btn.is-active {
+    background: #f0f4ff;
+    border-color: #bac8ff;
+    color: #4c6ef5;
+  }
+
+  :root[data-theme='dark'] .rfc-toggle-btn {
+    background: #252740;
+    border-color: #2e3150;
+    color: #6b6e82;
+  }
+
+  :root[data-theme='dark'] .rfc-toggle-btn:hover {
+    border-color: #3e4170;
+    color: #c8cad8;
+  }
+
+  :root[data-theme='dark'] .rfc-toggle-btn.is-active {
+    background: rgba(76, 110, 245, 0.15);
+    border-color: #4c6ef5;
+    color: #748ffc;
+  }
+
+  /* ── Collapsible panel ─────────────────────────── */
+  .rfc-toggle-panel {
+    display: none;
+    margin-top: 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid #e9ecef;
+    overflow: hidden;
+  }
+
+  .rfc-toggle-panel.is-open {
+    display: block;
+  }
+
+  :root[data-theme='dark'] .rfc-toggle-panel {
+    border-color: #2e3150;
+  }
+
+  /* ── Panel header ──────────────────────────────── */
+  .rfc-toggle-header {
+    padding: 0.5rem 1rem;
+    background: #f1f3f5;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 0.75rem;
+    color: #adb5bd;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+  }
+
+  :root[data-theme='dark'] .rfc-toggle-header {
+    background: #1f2133;
+    border-bottom-color: #2e3150;
+    color: rgba(200, 202, 216, 0.5);
+  }
+
+  /* ── Panel body (RFC text) ─────────────────────── */
+  .rfc-toggle-body {
+    padding: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: #495057;
+    background: #f8f9fa;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  :root[data-theme='dark'] .rfc-toggle-body {
+    color: #c8cad8;
+    background: #1a1b26;
+  }
+</style>

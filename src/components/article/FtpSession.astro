@@ -1,0 +1,101 @@
+---
+/**
+ * FtpSession — Custom code block for FTP session examples.
+ *
+ * Shiki has no FTP session grammar, so this component renders pre-formatted HTML
+ * with CSS classes for manual syntax coloring. Content is passed as the default
+ * slot with <span> tags using the syn-* classes listed below.
+ *
+ * Syntax classes (apply to <span> elements in the slot):
+ *   syn-keyword  — #c792ea  — protocol keywords
+ *   syn-string   — #c3e88d  — string values / paths
+ *   syn-command  — #ffcb6b  — FTP commands (USER, PASS, TYPE, etc.)
+ *   syn-response — #82aaff  — server response lines
+ *   syn-number   — #f78c6c  — numeric values
+ *   syn-comment  — #546e7a  — inline comments
+ *
+ * Props:
+ *   title   — optional header label on the left (e.g. "FTP Session")
+ *   context — optional label on the right (e.g. "Control connection (port 21)")
+ */
+
+interface Props {
+  title?: string;
+  context?: string;
+}
+
+const { title, context } = Astro.props;
+const hasHeader = title || context;
+---
+
+<div class="ftp-session">
+  {hasHeader && (
+    <div class="ftp-session__header">
+      <span>{title}</span>
+      {context && <span class="ftp-session__context">{context}</span>}
+    </div>
+  )}
+  <pre class="ftp-session__body"><slot /></pre>
+</div>
+
+<style>
+  /* Container: always dark, regardless of site theme */
+  .ftp-session {
+    background: #1a1d24;
+    color: #e9ecef;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  /* Header bar */
+  .ftp-session__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.625rem 1.5rem;
+    font-size: 0.8125rem;
+    color: #868e96;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .ftp-session__context {
+    font-size: 0.75rem;
+    color: #868e96;
+  }
+
+  /* Code body */
+  .ftp-session__body {
+    padding: 1.5rem;
+    overflow-x: auto;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    margin: 0;
+    font-family: var(--sl-font-mono, 'JetBrains Mono', monospace);
+  }
+
+  /* Syntax highlight colors */
+  .ftp-session :global(.syn-keyword) {
+    color: #c792ea;
+  }
+
+  .ftp-session :global(.syn-string) {
+    color: #c3e88d;
+  }
+
+  .ftp-session :global(.syn-command) {
+    color: #ffcb6b;
+  }
+
+  .ftp-session :global(.syn-response) {
+    color: #82aaff;
+  }
+
+  .ftp-session :global(.syn-number) {
+    color: #f78c6c;
+  }
+
+  .ftp-session :global(.syn-comment) {
+    color: #546e7a;
+  }
+</style>

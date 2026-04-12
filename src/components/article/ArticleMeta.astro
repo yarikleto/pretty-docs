@@ -1,0 +1,116 @@
+---
+/**
+ * ArticleMeta -- Source badge, "View original" link, and reading time.
+ *
+ * Renders the metadata row that appears below the article description in the
+ * Starlight article header. Positioned via negative margin to pull into the
+ * header flow (Starlight auto-renders title + description from frontmatter;
+ * this component is placed at the top of the MDX body to appear directly after).
+ *
+ * Visual spec (design-spec.md section 2.3, system-design.md section 4.2):
+ *   Container: mt-5, flex flex-wrap items-center gap-3
+ *   Source badge: pill with document icon (12x12) + text
+ *   View original: text link with external-link icon (10x10)
+ *   Separator: "|" pipe character
+ *   Reading time: plain text
+ *
+ * Props:
+ *   source    -- e.g. "RFC 959, Section 3"
+ *   sourceUrl -- URL to the original document
+ *   readingTime -- e.g. "12 min read"
+ */
+
+interface Props {
+  source: string;
+  sourceUrl: string;
+  readingTime: string;
+}
+
+const { source, sourceUrl, readingTime } = Astro.props;
+---
+
+<div class="article-meta">
+  <span class="article-meta__badge">
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+      <rect x="2" y="2" width="12" height="12" rx="2" />
+      <path d="M5 5h6M5 8h6M5 11h3" />
+    </svg>
+    Based on {source}
+  </span>
+  <a href={sourceUrl} target="_blank" rel="noopener noreferrer" class="article-meta__link">
+    View original
+    <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 9v4H3V4h4M8 8l5-5M10 3h3v3" />
+    </svg>
+  </a>
+  <span class="article-meta__separator" aria-hidden="true">|</span>
+  <span class="article-meta__reading-time">{readingTime} read</span>
+</div>
+
+<style>
+  .article-meta {
+    margin-top: 1.25rem; /* mt-5 */
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem; /* gap-3 */
+  }
+
+  .article-meta__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem; /* gap-1.5 */
+    font-size: 0.75rem; /* text-xs */
+    line-height: 1;
+    color: #ced4da; /* surface-400 */
+    background: #f1f3f5; /* surface-100 */
+    padding: 0.25rem 0.625rem; /* py-1 px-2.5 */
+    border-radius: 0.375rem; /* rounded-md */
+  }
+
+  .article-meta__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem; /* gap-1 */
+    font-size: 0.75rem; /* text-xs */
+    line-height: 1;
+    color: #4c6ef5; /* brand-600 */
+    text-decoration: none;
+  }
+
+  .article-meta__link:hover {
+    color: #4263eb; /* brand-700 */
+  }
+
+  .article-meta__separator {
+    font-size: 0.75rem; /* text-xs */
+    color: #dee2e6; /* surface-300 */
+  }
+
+  .article-meta__reading-time {
+    font-size: 0.75rem; /* text-xs */
+    color: #ced4da; /* surface-400 */
+  }
+
+  /* Dark mode */
+  :root[data-theme='dark'] .article-meta__badge {
+    color: rgba(200, 202, 216, 0.5); /* dark-text/50 */
+    background: #1f2133; /* dark-surface */
+  }
+
+  :root[data-theme='dark'] .article-meta__link {
+    color: #748ffc; /* brand-400 */
+  }
+
+  :root[data-theme='dark'] .article-meta__link:hover {
+    color: #91a7ff; /* brand-300 */
+  }
+
+  :root[data-theme='dark'] .article-meta__separator {
+    color: #2e3150; /* dark-border */
+  }
+
+  :root[data-theme='dark'] .article-meta__reading-time {
+    color: rgba(200, 202, 216, 0.5); /* dark-text/50 */
+  }
+</style>
