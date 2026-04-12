@@ -332,14 +332,24 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   /* Page-level result title */
   #starlight__search .pagefind-ui__result-inner > .pagefind-ui__result-title {
-    padding: 0.75rem 1rem 0.75rem 3rem;
+    padding: 0.75rem 1rem;
+  }
+
+  /* Page icon before title */
+  #starlight__search .pagefind-ui__result-inner > .pagefind-ui__result-title::before {
+    display: none;
   }
 
   /* Nested sub-result (section within a page) */
   #starlight__search .pagefind-ui__result-nested {
     position: relative;
-    padding: 0.5rem 1rem 0.5rem 3rem;
+    padding: 0.5rem 1rem 0.5rem 1rem;
     cursor: pointer;
+  }
+
+  /* Hide tree diagram SVGs — they need Starlight's exact layout vars */
+  #starlight__search .pagefind-ui__result-nested::before {
+    display: none;
   }
 
   #starlight__search .pagefind-ui__result-title:not(:where(.pagefind-ui__result-nested *)),
@@ -367,9 +377,9 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
   #starlight__search .pagefind-ui__result-inner {
     align-items: stretch;
     gap: 1px;
+    overflow: hidden;
+    border-radius: 6px;
   }
-  #starlight__search .pagefind-ui__result-inner > :first-child { border-radius: 6px 6px 0 0; }
-  #starlight__search .pagefind-ui__result-inner > :last-child { border-radius: 0 0 6px 6px; }
 
   /* Result link */
   #starlight__search .pagefind-ui__result-link {
