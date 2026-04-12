@@ -224,6 +224,16 @@ npm run preview   # Preview production build
 - Source citations required on every article
 - Contribution guide + CLAUDE.md define article style
 
+### CSS Pitfall: Dual-Context Components (Landing Page vs Starlight)
+
+The Search component (`src/components/Search.astro`) runs in two different CSS environments:
+1. **Starlight pages** — full Starlight CSS layer ordering (`@layer starlight.core`, etc.), inherited body text colors, and Starlight's CSS custom properties.
+2. **Landing page** (`src/pages/index.astro`) — standalone Astro page with NO Starlight CSS layers, NO inherited Starlight body styles.
+
+**The trap:** Pagefind's CSS is imported via `@import url('...') layer(starlight.core)`. CSS `@layer` rules have *lower* cascade priority than unlayered styles. On Starlight pages this works because Starlight controls the layer ordering. On the landing page, layered styles silently lose to browser defaults or unlayered rules — causing subtle visual differences (e.g., missing input padding, wrong text colors in dark mode).
+
+**Rule for any shared component:** Never rely on styles inherited from Starlight's environment (layer ordering, body color, CSS custom properties like `--sl-*`). Every visual property the component needs must be explicitly set in the component's own `<style>` block using hardcoded values. If a Pagefind/Starlight default style is needed, duplicate it as an explicit rule outside the `@layer`. Always test shared components on BOTH the landing page and a Starlight article page, in both light and dark mode.
+
 ---
 
 ## Article Writing Guide (for AI assistants)
