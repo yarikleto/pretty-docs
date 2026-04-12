@@ -1,66 +1,151 @@
 ---
 title: FTP Data Transfer
-description: How FTP moves files between computers — data types, structures, and transfer modes explained.
+description: How FTP moves files between computers — data types, structures, and transfer modes explained with diagrams.
+prev: false
+next:
+  label: "FTP Commands"
+  link: "/networking/ftp-commands/"
 ---
 
+import ArticleMeta from '../../../components/article/ArticleMeta.astro';
 import SourceRef from '../../../components/article/SourceRef.astro';
+import SourceCard from '../../../components/article/SourceCard.astro';
+import RfcToggle from '../../../components/article/RfcToggle.astro';
+import StructureCard from '../../../components/article/StructureCard.astro';
 import ThreeDimensions from '../../../components/diagrams/ThreeDimensions.astro';
 
-The File Transfer Protocol (FTP) defines a standard way to move files between a client and a server over a TCP/IP network. While the protocol handles authentication, directory listing, and connection management, its core purpose is **reliable data transfer**. This article covers the three pillars of FTP data transfer: data types, data structures, and transfer modes.
+<ArticleMeta
+  source="RFC 959, Section 3"
+  sourceUrl="https://www.w3.org/Protocols/rfc959/3_DataTransfer.html"
+  readingTime="12 min"
+/>
+
+The File Transfer Protocol (FTP) was designed in an era when computers disagreed about almost everything — how to represent text, how to organize files, even how many bits made up a byte. Its data transfer system had to bridge all of that. Rather than choosing one format and forcing everyone to use it, FTP lets the sender and receiver **negotiate** how data should be represented, structured, and transmitted.
+
+This article covers Section 3 of RFC 959, which defines the three independent parameters that together describe any FTP data transfer. Think of them as three questions that must be answered before a single byte moves:
+
+1. **What language are we speaking?** (Data Type)
+2. **How is the content organized?** (Data Structure)
+3. **How do we ship it?** (Transfer Mode)
 
 ## The Three Dimensions of a Transfer
 
-When FTP transfers a file, three independent parameters define how that data moves. Think of them as three axes of a coordinate system — each choice is independent of the others:
-
-1. **Data Type** — how to interpret the bytes (text vs. binary)
-2. **Data Structure** — how the file is organized (flat, records, or pages)
-3. **Transfer Mode** — how to send it over the wire (stream, blocks, or compressed)
-
-These three choices are set independently with the `TYPE`, `STRU`, and `MODE` commands before a transfer begins.
+Every FTP transfer is defined by three independent choices, set with the `TYPE`, `STRU`, and `MODE` commands before the transfer begins. Each choice is orthogonal — changing the data type does not constrain which structure or mode you can use.
 
 <ThreeDimensions />
-<SourceRef section="3.1" quote="Data representation is handled in FTP by a user specifying a representation type." />
+<SourceRef section="3" quote="Data representation is handled in FTP by a user specifying a representation type." />
+
+The defaults — ASCII type, File structure, Stream mode — work for simple text transfers between similar systems. But transferring a compiled executable from a mainframe to a Unix workstation? You would need to change at least the type (to Image) and possibly the structure (to Record) to avoid mangling the data.
 
 ## Data Types
 
-FTP supports several data representations to handle the differences between operating systems. When a file is transferred, both the sender and receiver must agree on how to interpret the bytes.
+Think of data types as **languages** — the sender and receiver need to agree on which one they are speaking. If the sender transmits a file as ASCII text but the receiver tries to interpret it as raw binary, the result is garbled data. The `TYPE` command sets this agreement before any transfer begins.
 
-**ASCII type** is the default. Text files are transferred in ASCII with line endings normalized — the sender converts native line endings to CRLF (carriage return + line feed), and the receiver converts CRLF to its native format. This ensures that a text file created on Unix (LF endings) can be read correctly on Windows (CRLF endings) and vice versa.
+### ASCII Type
 
-**Image type** (also called binary) transfers files byte-for-byte with no conversion. This is essential for non-text files like images, executables, and compressed archives, where any byte modification would corrupt the data. Most modern FTP usage defaults to binary mode since incorrect ASCII conversion can damage files that aren't plain text.
+**ASCII** is the default data type, and the one you will encounter most often with text files. When a file is transferred in ASCII mode, FTP performs a crucial translation: the sender converts its native line endings to a canonical format (CRLF — carriage return followed by line feed), and the receiver converts CRLF back to whatever its operating system expects.
 
-**EBCDIC type** exists for transfers between systems that use EBCDIC encoding (primarily IBM mainframes). It functions like ASCII type but uses EBCDIC as the transfer representation instead.
+This matters because operating systems disagree about line endings. Unix uses a single line feed (LF). Classic Mac OS used a carriage return (CR). Windows uses both (CRLF). Without this normalization, a text file transferred from Unix to Windows would appear as one enormous line.
 
-<SourceRef section="3.1.1" quote="The data types are defined by the TYPE command." />
+ASCII type also supports an optional **second parameter** for vertical format control — how form feeds, vertical tabs, and other formatting characters should be interpreted. In practice, the two sub-options (Non-print and Telnet) are rarely specified; Non-print is the default and simply means "no special formatting."
+
+### EBCDIC Type
+
+**EBCDIC** is the ASCII type's counterpart for IBM mainframe systems. Where ASCII type uses the ASCII character set as the transfer representation, EBCDIC type uses the EBCDIC character set. It serves the same purpose — text transfer with line-ending normalization — but for environments where EBCDIC is the native encoding.
+
+Like ASCII, EBCDIC supports the same vertical format control sub-options. Unless you are transferring files to or from an IBM mainframe, you will never encounter this type.
+
+### Image Type (Binary)
+
+**Image type** — commonly called **binary mode** — transfers data byte-for-byte with no conversion whatsoever. The file is treated as a continuous stream of bits, packed into 8-bit bytes for transfer, and stored without any transformation at the receiving end.
+
+This is the type you want for anything that is not plain text: images, executables, compressed archives, PDFs, database files. Any byte-level modification during transfer would corrupt these files. A JPEG image has no "line endings" to normalize — every byte is meaningful data.
+
+### Local Type
+
+**Local type** exists for systems where the fundamental storage unit is not an 8-bit byte. The sender specifies a **byte size** (the number of bits per logical byte on the local system), and data is transferred using that byte size. This accommodated machines with 36-bit words or other non-octet architectures. On modern systems (which universally use 8-bit bytes), Local type with a byte size of 8 is functionally identical to Image type.
+
+:::note[Why this matters]
+The single most common FTP mistake is transferring a binary file in ASCII mode. Because ASCII mode rewrites bytes that happen to match line-ending characters (CR, LF), a binary file transferred as ASCII arrives corrupted — images display with artifacts, executables crash, archives fail to decompress. Most modern FTP clients default to binary mode precisely to avoid this. If you ever see a transferred file that is "almost right" but slightly broken, check the transfer type first.
+:::
+
+<RfcToggle section="3.1.1" label="See original RFC text for Data Types">
+{`   3.1.1.  DATA TYPES
+
+      Data representations are handled in FTP by a user specifying a
+      representation type.  This type may implicitly (stripping line
+      endings) or explicitly (as in local type) define a byte size for
+      interpretation which is referred to as the "transfer byte size."
+
+         ASCII TYPE
+
+            This is the default type and must be accepted by all FTP
+            implementations.  It is intended primarily for the transfer
+            of text files, except when both hosts would find the EBCDIC
+            type more convenient.
+
+            The sender converts the data from an internal character
+            representation to the standard 8-bit NVT-ASCII
+            representation (see the Telnet specification).  The receiver
+            will convert the data from the standard form to his own
+            internal form.
+
+            In accordance with the NVT standard, the <CRLF> sequence
+            should be used where necessary to denote the end of a line
+            of text.
+
+         EBCDIC TYPE
+
+            This type is intended for efficient transfer between hosts
+            which use EBCDIC for their internal character representation.
+
+            For transmission, the data are represented as 8-bit EBCDIC
+            characters.  The character code is the only difference
+            between the functional specifications of EBCDIC and ASCII
+            types.
+
+         IMAGE TYPE
+
+            The data are sent as contiguous bits which, for transfer,
+            are packed into the 8-bit transfer bytes.  The receiving
+            site must store the data as contiguous bits.
+
+         LOCAL TYPE
+
+            The data is transferred in logical bytes of the size
+            specified by the obligatory second parameter, Byte size.
+            The value of Byte size must be a decimal integer; there is
+            no default value.`}
+</RfcToggle>
+
+<SourceRef section="3.1.1" quote="The data types defined in FTP are described below, along with their definitions." />
 
 ## Data Structures
 
-Beyond the type system, FTP defines how data is organized within a transfer. The structure determines whether the data is treated as a continuous stream or broken into logical units.
+Data types define how to **interpret** bytes. Data structures define how to **organize** them. Think of it this way: the type tells you whether the bytes represent text or binary data, while the structure tells you whether those bytes form one continuous stream, a sequence of records, or a set of indexed pages.
 
-**File structure** is the default and most common. The file is treated as a continuous sequence of bytes with no internal structure. This maps naturally to how modern operating systems handle files and is the structure used in almost all contemporary FTP transfers.
+The `STRU` command sets the structure before a transfer. Most modern transfers use File structure (the default), but understanding all three helps explain why certain FTP features exist.
 
-**Record structure** divides the file into sequential records. This is relevant for systems where files are inherently record-oriented (such as mainframe datasets). Each record is delimited within the data stream, allowing the receiver to reconstruct the record boundaries.
+<StructureCard
+  letter="F"
+  title="File Structure"
+  description="The file is a continuous sequence of bytes with no internal boundaries. This is the default and maps directly to how modern operating systems store files — as flat byte streams. Virtually all FTP transfers today use File structure. When in doubt, this is what you want."
+/>
 
-**Page structure** allows files to be transferred as independent indexed pages. Each page has a header containing its index and metadata. This structure is rarely used in practice but was designed for systems where files are stored as non-contiguous pages (like some virtual memory systems).
+<StructureCard
+  letter="R"
+  title="Record Structure"
+  description="The file is divided into sequential records, each with explicit boundaries. This structure exists because some systems — particularly IBM mainframes and other record-oriented operating systems — store files as sequences of fixed-length or variable-length records, not as flat byte streams. FTP preserves these record boundaries during transfer so the receiving system can reconstruct the original record layout."
+/>
 
-<SourceRef section="3.1.2" />
+<StructureCard
+  letter="P"
+  title="Page Structure"
+  description="The file is a set of independent, indexed pages (also called access units). Each page is transmitted with a header containing its page number, data length, and a page type descriptor. This was designed for systems that store files as non-contiguous pages in memory — think of virtual memory paging or random-access file systems. Page structure is the only structure that allows random access to parts of a file during transfer. It is rarely used in practice."
+/>
 
-## Transfer Modes
+<SourceRef section="3.1.2" quote="In addition to different representation types, FTP allows the structure of a file to be specified." />
 
-The transfer mode determines how data is formatted and sent through the data connection. The mode affects framing and error recovery, not the data representation (which is handled by the data type).
+The key insight is that **structure and type are independent**. You can transfer ASCII text in Record structure (common on mainframes that store text files as records) or Image data in File structure (the typical modern case). The three structure options exist not because FTP was over-designed, but because the protocol had to accommodate fundamentally different ideas about what a "file" is.
 
-**Stream mode** is the default and simplest mode. Data is sent as a continuous stream of bytes. For file structure, the end of file is indicated by the sender closing the data connection. Stream mode has no overhead and is the mode used by virtually all modern FTP implementations.
-
-**Block mode** wraps the data in a series of blocks, each with a header containing a count field and descriptor code. The descriptor indicates whether the block is the end of a record, end of file, or a restart marker. Block mode allows the data connection to remain open between transfers and supports restart of interrupted transfers.
-
-**Compressed mode** uses run-length encoding to compress the data before transmission. Runs of repeated bytes are replaced with a single byte and a repeat count. While this reduces bandwidth for certain types of data, modern alternatives like gzip compression at the application level or TLS compression have made this mode largely obsolete.
-
-<SourceRef section="3.4" quote="The next consideration in transferring data is choosing the appropriate transmission mode." />
-
-:::note
-Most modern FTP clients default to **binary (Image) mode** to avoid accidental data corruption. Always verify your transfer type when working with text files across different operating systems.
-:::
-
-:::caution
-Compressed mode (`MODE C`) is largely obsolete. Modern deployments should use TLS-level compression or application-layer tools like `gzip` instead of relying on FTP's built-in compression.
-:::
+{/* ----- Transfer Modes section will be added in TASK-020 ----- */}
