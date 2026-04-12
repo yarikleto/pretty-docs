@@ -1,6 +1,6 @@
 # TASK-020: FTP Data Transfer article — part 2 (Transfer Modes, Example Session, Source)
 **Milestone:** 4 — FTP Article Content & Contributing Pages
-**Status:** `TODO`
+**Status:** `DONE`
 **Size:** M | **Type:** content
 **Depends on:** TASK-019
 **Blocks:** TASK-022
