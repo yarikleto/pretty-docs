@@ -28,7 +28,7 @@ export default defineConfig({
 				{
 					label: 'Programming Languages',
 					items: [
-						{ label: 'C++ Cheatsheet', slug: 'geeksforgeeks.org/cpp/cpp-cheatsheet' },
+						{ label: 'C++ Cheatsheet', slug: 'cpp/cheatsheet' },
 					],
 				},
 				{

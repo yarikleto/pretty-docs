@@ -52,15 +52,21 @@ Rewrites one specific URL into a Pretty Docs article. Uses a three-phase pipelin
 
 An original article synthesized from multiple sources, the model's own knowledge, and web research. The goal is to produce the best practical reference on the topic — not to faithfully rewrite any single source. Sources should still be cited where applicable (use cppreference.com, MDN, official docs, etc.), but the article can include original examples, explanations, and structure. The workflow is more flexible: research broadly, write iteratively, expand based on what's missing.
 
-### URL → File Path → Slug Rule
+### File Path → Slug Rules
 
-The article's file path and site URL are derived directly from the source URL. Strip the scheme and `www.` prefix — the rest becomes the path.
+**Single-source articles** — path derived from the source URL. Strip the scheme and `www.` prefix:
 
 | Source URL | File path | `slug` frontmatter |
 |---|---|---|
 | `https://www.w3.org/Protocols/rfc959/` | `src/content/docs/w3.org/Protocols/rfc959.mdx` | `w3.org/Protocols/rfc959` |
 | `https://datatracker.ietf.org/doc/html/rfc2616` | `src/content/docs/datatracker.ietf.org/doc/html/rfc2616.mdx` | `datatracker.ietf.org/doc/html/rfc2616` |
-| `https://man7.org/linux/man-pages/man2/open.2.html` | `src/content/docs/man7.org/linux/man-pages/man2/open.2.mdx` | `man7.org/linux/man-pages/man2/open.2` |
+
+**Comprehensive reference articles** — use a clean topic-based path:
+
+| Topic | File path | `slug` frontmatter |
+|---|---|---|
+| C++ Cheatsheet | `src/content/docs/cpp/cheatsheet.mdx` | `cpp/cheatsheet` |
+| Rust Ownership | `src/content/docs/rust/ownership.mdx` | `rust/ownership` |
 
 **Rules:**
 - Strip `https://`, `http://`, and `www.` prefix — keep everything else as-is.
