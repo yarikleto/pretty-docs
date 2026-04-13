@@ -29,6 +29,7 @@ export default defineConfig({
 					label: 'Programming Languages',
 					items: [
 						{ label: 'C++ Cheatsheet', slug: 'cpp/cheatsheet' },
+						{ label: 'Rust Cheatsheet', slug: 'rust/cheatsheet' },
 					],
 				},
 				{
