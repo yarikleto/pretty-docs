@@ -1,0 +1,166 @@
+---
+/**
+ * RustDataTypes — SVG diagram: Rust primitive data types.
+ *
+ * Shows eight fundamental types (i32, f64, bool, char, &str, String, u8, isize)
+ * as a 2-row grid of colored cards with type name, size, and example value.
+ *
+ * Grouped by category:
+ *   Row 1: Numeric types (i32, f64, u8, isize) — indigo
+ *   Row 2: Text & Logic types (bool, char, &str, String) — green
+ *
+ * Dark mode adaptation uses CSS classes defined in custom.css:
+ *   .axis-card, .axis-card-text, .axis-card-sub
+ */
+---
+
+<div class="diagram-wrapper rust-data-types">
+  <svg viewBox="0 0 740 280" class="rust-data-types-svg" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="rdt-numericGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#4c6ef5" stop-opacity="0.1"/>
+        <stop offset="100%" stop-color="#4c6ef5" stop-opacity="0.03"/>
+      </linearGradient>
+      <linearGradient id="rdt-textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#37b24d" stop-opacity="0.1"/>
+        <stop offset="100%" stop-color="#37b24d" stop-opacity="0.03"/>
+      </linearGradient>
+      <linearGradient id="rdt-numericGradDark" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#4c6ef5" stop-opacity="0.15"/>
+        <stop offset="100%" stop-color="#4c6ef5" stop-opacity="0.05"/>
+      </linearGradient>
+      <linearGradient id="rdt-textGradDark" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#37b24d" stop-opacity="0.15"/>
+        <stop offset="100%" stop-color="#37b24d" stop-opacity="0.05"/>
+      </linearGradient>
+    </defs>
+
+    {/* Row 1: Numeric types (indigo) */}
+    <rect class="rdt-row rdt-row-numeric" x="20" y="20" width="700" height="110" rx="12"
+          fill="url(#rdt-numericGrad)" stroke="#bac8ff" stroke-width="1"/>
+    <text x="38" y="45" font-size="11" font-weight="700" fill="#4263eb"
+          letter-spacing="0.08em">NUMERIC</text>
+    <text x="38" y="62" font-size="10" fill="#748ffc">Integers &amp; floats</text>
+
+    {/* i32 card */}
+    <rect class="axis-card" x="120" y="32" width="130" height="84" rx="8"
+          fill="white" stroke="#dbe4ff" stroke-width="1"/>
+    <text class="axis-card-text" x="185" y="56" font-size="14" font-weight="700"
+          fill="#212529" text-anchor="middle">i32</text>
+    <text class="axis-card-sub" x="185" y="74" font-size="11"
+          fill="#868e96" text-anchor="middle">4 bytes</text>
+    <text x="185" y="100" font-size="11" font-weight="500"
+          fill="#4c6ef5" text-anchor="middle" font-family="'JetBrains Mono', monospace">10, -5, 0</text>
+
+    {/* f64 card */}
+    <rect class="axis-card" x="265" y="32" width="130" height="84" rx="8"
+          fill="white" stroke="#dbe4ff" stroke-width="1"/>
+    <text class="axis-card-text" x="330" y="56" font-size="14" font-weight="700"
+          fill="#212529" text-anchor="middle">f64</text>
+    <text class="axis-card-sub" x="330" y="74" font-size="11"
+          fill="#868e96" text-anchor="middle">8 bytes</text>
+    <text x="330" y="100" font-size="11" font-weight="500"
+          fill="#4c6ef5" text-anchor="middle" font-family="'JetBrains Mono', monospace">3.14, -0.5</text>
+
+    {/* u8 card */}
+    <rect class="axis-card" x="410" y="32" width="130" height="84" rx="8"
+          fill="white" stroke="#dbe4ff" stroke-width="1"/>
+    <text class="axis-card-text" x="475" y="56" font-size="14" font-weight="700"
+          fill="#212529" text-anchor="middle">u8</text>
+    <text class="axis-card-sub" x="475" y="74" font-size="11"
+          fill="#868e96" text-anchor="middle">1 byte</text>
+    <text x="475" y="100" font-size="11" font-weight="500"
+          fill="#4c6ef5" text-anchor="middle" font-family="'JetBrains Mono', monospace">0..255</text>
+
+    {/* isize card */}
+    <rect class="axis-card" x="555" y="32" width="130" height="84" rx="8"
+          fill="white" stroke="#dbe4ff" stroke-width="1"/>
+    <text class="axis-card-text" x="620" y="56" font-size="14" font-weight="700"
+          fill="#212529" text-anchor="middle">isize</text>
+    <text class="axis-card-sub" x="620" y="74" font-size="11"
+          fill="#868e96" text-anchor="middle">Pointer-sized</text>
+    <text x="620" y="100" font-size="11" font-weight="500"
+          fill="#4c6ef5" text-anchor="middle" font-family="'JetBrains Mono', monospace">indexing</text>
+
+    {/* Row 2: Text & Logic types (green) */}
+    <rect class="rdt-row rdt-row-text" x="20" y="148" width="700" height="110" rx="12"
+          fill="url(#rdt-textGrad)" stroke="#b2f2bb" stroke-width="1"/>
+    <text x="38" y="173" font-size="11" font-weight="700" fill="#2b8a3e"
+          letter-spacing="0.08em">TEXT &amp; LOGIC</text>
+    <text x="38" y="190" font-size="10" fill="#51cf66">Characters, booleans &amp; strings</text>
+
+    {/* bool card */}
+    <rect class="axis-card" x="120" y="160" width="130" height="84" rx="8"
+          fill="white" stroke="#b2f2bb" stroke-width="1"/>
+    <text class="axis-card-text" x="185" y="184" font-size="14" font-weight="700"
+          fill="#212529" text-anchor="middle">bool</text>
+    <text class="axis-card-sub" x="185" y="202" font-size="11"
+          fill="#868e96" text-anchor="middle">1 byte</text>
+    <text x="185" y="228" font-size="11" font-weight="500"
+          fill="#37b24d" text-anchor="middle" font-family="'JetBrains Mono', monospace">true, false</text>
+
+    {/* char card */}
+    <rect class="axis-card" x="265" y="160" width="130" height="84" rx="8"
+          fill="white" stroke="#b2f2bb" stroke-width="1"/>
+    <text class="axis-card-text" x="330" y="184" font-size="14" font-weight="700"
+          fill="#212529" text-anchor="middle">char</text>
+    <text class="axis-card-sub" x="330" y="202" font-size="11"
+          fill="#868e96" text-anchor="middle">4 bytes (Unicode)</text>
+    <text x="330" y="228" font-size="11" font-weight="500"
+          fill="#37b24d" text-anchor="middle" font-family="'JetBrains Mono', monospace">'A', '🦀'</text>
+
+    {/* &str card */}
+    <rect class="axis-card" x="410" y="160" width="130" height="84" rx="8"
+          fill="white" stroke="#b2f2bb" stroke-width="1"/>
+    <text class="axis-card-text" x="475" y="184" font-size="14" font-weight="700"
+          fill="#212529" text-anchor="middle">&amp;str</text>
+    <text class="axis-card-sub" x="475" y="202" font-size="11"
+          fill="#868e96" text-anchor="middle">Borrowed slice</text>
+    <text x="475" y="228" font-size="11" font-weight="500"
+          fill="#37b24d" text-anchor="middle" font-family="'JetBrains Mono', monospace">"hello"</text>
+
+    {/* String card */}
+    <rect class="axis-card" x="555" y="160" width="130" height="84" rx="8"
+          fill="white" stroke="#b2f2bb" stroke-width="1"/>
+    <text class="axis-card-text" x="620" y="184" font-size="14" font-weight="700"
+          fill="#212529" text-anchor="middle">String</text>
+    <text class="axis-card-sub" x="620" y="202" font-size="11"
+          fill="#868e96" text-anchor="middle">Owned, growable</text>
+    <text x="620" y="228" font-size="11" font-weight="500"
+          fill="#37b24d" text-anchor="middle" font-family="'JetBrains Mono', monospace">String::from()</text>
+  </svg>
+</div>
+
+<style>
+  .diagram-wrapper.rust-data-types {
+    background-color: #fafbfc;
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .rust-data-types-svg {
+    width: 100%;
+    display: block;
+  }
+
+  .rust-data-types-svg text {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  :root[data-theme='dark'] .diagram-wrapper.rust-data-types {
+    background-color: #1f2133;
+  }
+
+  :root[data-theme='dark'] .rdt-row {
+    stroke-opacity: 0.3;
+  }
+
+  :root[data-theme='dark'] .rdt-row-numeric {
+    fill: url(#rdt-numericGradDark);
+  }
+
+  :root[data-theme='dark'] .rdt-row-text {
+    fill: url(#rdt-textGradDark);
+  }
+</style>
